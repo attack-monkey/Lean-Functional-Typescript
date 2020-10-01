@@ -188,7 +188,7 @@ If you are not tied to a particular state-manager, consider **lean-state**, whic
 
 ```
 
-npm i @attack-monkey/lean-state
+npm i lean-state
 
 ```
 
@@ -217,7 +217,7 @@ Then register State with
 
 ```typescript
 
-`import { register } from '@attack-monkey/lean-state`
+`import { register } from 'lean-state`
 
 const { setState, fromState, fromStateWhile } = register<State, Listeners>()
 
