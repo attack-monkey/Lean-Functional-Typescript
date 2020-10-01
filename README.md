@@ -110,7 +110,17 @@ Well it forces developers to think about pure vs impure for a start. More than t
 
 To use the above:
 
-// TODO: npm snip required
+```
+
+npm i @attack-monkey/impure
+
+```
+
+```typescript
+
+import { impure, asyncImpure } from '@attack-monkey/impure'
+
+```
 
 ## Impure Code as In/Out Operations
 
