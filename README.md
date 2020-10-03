@@ -18,7 +18,7 @@ So... here goes...
 Pure Code
 =========
 
-Functions take in input and return output - without ever mutating the input.
+Functions (and Operations which are essentially viewed as functions too) take in input and return output - without ever mutating the input.
 
 This therefore enforces data that is immutable.
 
@@ -29,7 +29,7 @@ Functions:
   - Only interact with inputs, constants, and other 'pure' functions to derive a result.
   - When passed the same set of inputs always return the same result.
 
-So functions are pure.
+So functions and operations are pure.
 
 Pure functions are built from immutable operations, and recursive functions.
 
