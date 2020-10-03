@@ -1,4 +1,4 @@
-# Lean Functional Typescript by Attack-monkey
+# A guide to Lean Functional Typescript
 A guide to Lean Functional Typescript
 
 ## Overview
