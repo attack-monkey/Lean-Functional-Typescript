@@ -33,12 +33,72 @@ So functions and operations are pure.
 
 Pure functions are built from immutable operations, and recursive functions.
 
-Read up on these two things as there is plenty of doco already out there :)
+### Some Immutable Operations...
+
+**Numbers**
+
+```typescript
+
+const a = 1
+const b = a *10
+
+```
+
+**Strings**
+
+```typescript
+
+const a = 'hello'
+const b = a + ' world'
+
+```
+
+**Arrays**
+
+```typescript
+
+const a = [1,2,3]
+const b = [...a, 4,5,6]
+
+```
+
+**Objects**
+
+```typescript
+
+const person1 = {
+  name: 'ben',
+  isType: 'person'
+}
+
+const person2 = {
+  ...a,
+  name: 'jan'
+}
+
+```
+
+### An example of a recursive function
+
+```typescript
+
+const recFn = (a = 0) =>
+  number > 50
+    ? console.log('50!!!')
+    : recFn(a + 1)
+
+recFn()
+
+```
+
+There is a lot of doco already out there on immutable operations and recursive functions, so we've only given a tiny taste here.
 
 Impure Code
 ===========
 
-Impure code should have no effect on the Pure Code around it.
+In contrast to Pure Code, Impure Code contains mutations, unpredictable results and interactions with things outside of given functions.
+
+In **Lean** 'Impure Code' should have no effect on the Pure Code around it.
 
 To achieve this, impure code should not leak impurity into the scope.
 
@@ -76,12 +136,12 @@ eg.
 
 ```typescript
 
-impure(() => {
-  const a = Math.random()
-  const b = a + 1
-  return [a, b]
-})
-  .then(([a, b]) => a + b)
+impure(() =>
+  Math.random()
+)
+  .then((a: number) => {
+    const b = a + 1
+  })
 
 ```
 
@@ -89,7 +149,7 @@ impure(() => {
 
 The impure code is wrapped in a function, and the result is passed to the pure function inside the `then`.
 
-Here's the async version.
+Here's an async version.
 
 ```typescript
 
@@ -140,9 +200,9 @@ Listeners are an 'agreed' way of listening for data from the 'outside world'.
 
 eg. `listenToOutside(newData => doSomethingPure(newData))`
 
-^^ This can also be written with 'point-free' style as `listenToOutside(doSomethingPure)`
+^^ This clso be written with 'point-free' style as `listenToOutside(doSomethingPure)`
 
-Listeners tend to come in a few different flavors but they all listen for new data and then pass that data into an a pure function.
+Listeners tend to come in a few different flavors but they all listen for new data and then pass that data into a pure function.
 
 The Listener itself doesn't leak scope.
 
