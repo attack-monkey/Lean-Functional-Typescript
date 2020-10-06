@@ -315,11 +315,6 @@ setState('greeting', 'hello again') // send a data change.
 
 ```
 
-It's important to know that even though state is being managed outside of the Pure Code, race conditions can still occur.
-
-For example - you may have two different click events fire off mutations at the same time, and order my not be what you expect.
-This is one of the big reasons for reducing mutations in the first place.
-
 Functions over Classes + Methods
 ================================
 
@@ -341,8 +336,10 @@ eg.
 
 ```typescript
 
+// Here we are using the fpipe library which is modelled after fsharp's pipeline operator `|>`
+
 const increment = (a: number) => a + 1 
-const three = pipe(increment, increment)(1)
+const three = fpipe(1, increment, increment)
 
 // This is the same as calling
 
@@ -354,23 +351,21 @@ const three = increment(
 
 ```
 
-The above uses Ramda's `pipe` function.
+The above uses **Lean**'s `fpipe` function.
 
-`pipe` takes a series of Unary (single argument) functions and connects them together into a custom-pipe.
-When the custom-pipe function is called and passed an argument the whole pipe plays out.
+`npm i @attack-monkey/fpipe`
+
+`fpipe` first takes a value, followed by a series of Unary (single argument) functions. The value is passed into the first function. The result is passed into the second function and so on.
 
 ```typescript
 
-const addTwo = pipe(increment, increment)
+const addTwo = (a: number) => fpipe(a, increment, increment)
 const three = addTwo(1)
 
 ```
 
-Ramda is a 'practical' functional library with a lot of useful functions - but `pipe` in particular is integral to functional composition, which is a major part of functional programming. Ramda's philosophy fits with **Lean** very well as both try to remain idiomatic to Javascript / Typescript.
+To use `fpipe` requires functions to be Unary, but often functions require more than one argument.
 
-`npm i ramda`
-
-To use `pipe` requires functions to be Unary, but often functions require more than one argument.
 Enter partial functions.
 
 Unary Functions & Partial Functions
@@ -397,11 +392,11 @@ This technique allows multi-argument functions to be used in `pipes`
 ```typescript
 
 console.log(
-  pipe(
-    () => 1,
+  fpipe(
+    1,
     add(3),
     add(2)
-  )()
+  )
 )
 
 ```
@@ -454,14 +449,14 @@ Instead, the following is preferred:
 ```typescript
 
 const doubleMap = (value: number[]) => value.map(item => item * 2) // still making use of the built in `.map`
-const quadMap = pipe(doubleMap, doubleMap)
+const quadMap = (x: number) => fpipe(x, doubleMap, doubleMap)
 
 const a = [1, 2, 3]
 const b = quadMap(a)
 
 ```
 
-And `doubleMap` and `quadMap` can be added to 'library' modules - should this help with grouping...
+And `doubleMap` and `quadMap` can be added to a 'library' object to help with grouping.
 
 ```typescript
 
@@ -483,7 +478,43 @@ const a = NumberArray.quadmap([1, 2, 3])
 
 ```
 
+> A library groups functions that work on the same call signature.
+
 All in all - less code and more flexibility :D
+
+## Chaining vs Piping
+
+In **lean** their is a preference towards piping functions together rather than chaining methods. The reason is because methods generally come from class + method syntax rather than function syntax.
+
+In saying that, their are already functional libraries out there that use chaining rather than piping, and even a mix of both chaining and piping.
+
+It is common to see functional libraries that use syntax like the following...
+
+```typescript
+
+const myList = List.of([1, 2, 3])
+
+myList
+  .reverse()
+  .append('blast off!')
+  .chain(console.log)
+
+```
+
+This is totally fine... but when writing your own functions - Lean prefers...
+
+```typescript
+
+fpipe(
+  [1, 2, 3],
+  reverse,
+  append('blast off!'),
+  chain(console.log)
+)
+
+Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature.
+
+```
 
 ## Pattern Matching
 
@@ -555,5 +586,4 @@ Where to from here?
 
 3. While an obvious path is to learn more about other flavors of Functional Programming, remember that **Lean** is about simplicity. It is better to write code that is easily digestible by others than introduce difficult to grasp concepts. **Lean** dove-tails into the javascript / typescript paradigm - where as some other concepts seem foreign to the language. With that caution in mind - learn more about FP.
 
-4. Learn more about the libraries that we've mentioned.
-
+4. Learn more about functional libraries - including Ramda and Rxjs
