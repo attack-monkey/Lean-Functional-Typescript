@@ -239,7 +239,7 @@ Things that use this concept are:
 Mutations
 =========
 
-Instead of using mutable `let` and `var`, state is managed via (you guessed it) Listeners and Senders.
+At an application-state level, state is managed via (you guessed it) Listeners and Senders.
 Mutations can be handled by various state managers including Rxjs, Redux, etc.
 
 If you are not tied to a particular state-manager, consider **lean-state**, which is designed for **Lean** from the ground up.
@@ -300,9 +300,9 @@ To register a listener and listen for state changes...
 // listens to changes in state.greeting and calls myPureFunction with it
 
 fromState(
-  'myListener',
-  ['greeting'],
-  ({ greeting }) => myPureFunction(greeting)
+  'myListener', /* Give your listener an id - this allows automatic teardown of listeners when they are no longer needed */
+  ['greeting'], /* List the state's keys that you want to listen to */
+  ({ greeting }) => myPureFunction(greeting) /* When a change happens on the key(s) that you are listening to, the new state object is passed into this function */
 ) 
 
 ```
