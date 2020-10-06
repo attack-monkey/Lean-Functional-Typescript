@@ -319,7 +319,6 @@ From time to time it is common to see `let` syntax, but should only be used when
 
 Using `let` makes code impure. 
 
-```
 
 Functions over Classes + Methods
 ================================
