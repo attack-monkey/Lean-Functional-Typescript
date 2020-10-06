@@ -315,6 +315,12 @@ setState('greeting', 'hello again') // send a data change.
 
 ```
 
+From time to time it is common to see `let` syntax, but should only be used when contained to a small footprint and when state-management seams like overkill. Generally using a state manager is preferred.
+
+Using `let` makes code impure. 
+
+```
+
 Functions over Classes + Methods
 ================================
 
