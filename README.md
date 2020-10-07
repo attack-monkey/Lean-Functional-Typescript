@@ -487,7 +487,7 @@ All in all - less code and more flexibility :D
 
 ## Chaining vs Piping
 
-In **lean** their is a preference towards piping functions together rather than chaining methods. The reason is because methods generally come from class + method syntax rather than function syntax.
+In **lean** there is a preference towards piping functions together rather than chaining methods. The reason is because methods generally come from class + method syntax rather than function syntax.
 
 In saying that, their are already functional libraries out there that use chaining rather than piping, and even a mix of both chaining and piping.
 
