@@ -225,6 +225,8 @@ fpipe(
 
 ```
 
+Also, since the only thing that the constructor is doing is adding a type signature, this can just be replaced with `() => { ... } as Io<...>`.
+
 > What is `fpipe` ? It's a piping function that you'll learn more about shortly.
 
 ## Impure Code as In/Out Operations
