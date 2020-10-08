@@ -192,7 +192,7 @@ All this does is tags the `() => { ... }` as type of `Io<A>` where `A` is the ty
 
 This `Io` can now be passed around as a value until such time as it is required to run.
 
-When it is needed the `Io` can be called as the result injected into a piece of pure code.
+When it is needed the `Io` can be called and the impure code is run.
 
 What benefit does this provide?
 
