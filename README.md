@@ -562,9 +562,11 @@ fpipe(
   append('blast off!')
 )
 
+```
+
 Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
 
-```
+
 
 ## Pattern Matching
 
