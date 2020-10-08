@@ -164,7 +164,7 @@ asyncImpure(resolve => {
 
 Both feel alot like the familiar `Promise` syntax that we are used to.
 
-So what benefit does this provide? 
+**So what benefit does this provide?**
 
 Well it forces developers to think about pure vs impure for a start. More than that though, it means that there is a focus on writing pure functions that are easy to test. While the impure code may need to load some values using getters, the tricky logic is handled by pure operations.
 
@@ -194,7 +194,7 @@ This `Io` can now be passed around as a value until such time as it is required 
 
 When it is needed the `Io` can be called and the impure code is run.
 
-What benefit does this provide?
+**What benefit does this provide?**
 
 Your Pure code can be tested by passing in a pure function in place of the `Io`.
 
@@ -224,8 +224,6 @@ fpipe(
 )
 
 ```
-
-Also, since the only thing that the constructor is doing is adding a type signature, this can just be replaced with `() => { ... } as Io<...>`.
 
 > What is `fpipe` ? It's a piping function that you'll learn more about shortly.
 
