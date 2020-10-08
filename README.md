@@ -182,6 +182,51 @@ import { impure, asyncImpure } from '@attack-monkey/impure'
 
 ```
 
+The other way to handle Impure Code is with `Io`
+
+Again start by wrapping your code in a function `() => { ... }`
+
+Instead of wrapping this in `impure`, instead wrap it in `Io.of()`
+
+All this does is tags the `() => { ... }` as type of `Io<A>` where `A` is the type of the return value.
+
+This `Io` can now be passed around as a value until such time as it is required to run.
+
+When it is needed the `Io` can be called as the result injected into a piece of pure code.
+
+What benefit does this provide?
+
+Your Pure code can be tested by passing in a pure function in place of the `Io`.
+
+You can easily create an Io type and constructor...
+
+```typescript
+
+type Io<A> = () => A
+
+const ioOf = <A>(a: Io<A>): Io<A> => a
+
+const Io = { of: ioOf }
+
+```
+
+and use it like so...
+
+```typescript
+
+fpipe(
+  Io.of(() => Math.random()),
+  io => ({
+    io1: io,
+    io2: Io.of(() => Math.random())
+  }),
+  ({ io1, io2 }) => console.log(io1() + io2())
+)
+
+```
+
+> What is `fpipe` ? It's a piping function that you'll learn more about shortly.
+
 ## Impure Code as In/Out Operations
 
 Impure code can be thought of as In/Out operations connecting Pure code to the outside world.
@@ -315,19 +360,23 @@ setState('greeting', 'hello again') // send a data change.
 
 ```
 
-Mutable variables declared with `let` syntax should only be used when contained to a small footprint and when state-management seams like overkill. Generally using a state manager is preferred because using `let` makes code impure. 
+### Let
+
+Mutable variables declared with `let` syntax should only be used when contained to a small footprint and when state-management seems like overkill. Generally using a state manager is preferred because using `let` makes code impure. 
 
 
 Functions over Classes + Methods
 ================================
 
 Classes bind specific methods to an object, which more often than not mutate the object's properties.
-This not only makes class + method syntax impure - but it also locks methods against certain objects.
+This not only makes class + method syntax impure - but it also locks methods against objects.
 Further to the point, a class with only static methods, may as well be written as an object literal.
 
-Pure Functions have their 'properties' passed in, and can be used on anything as long as the properties meet the 'calling signature' of the function.
+Pure Functions have their 'properties' passed in, and can be used on anything as long as the properties meet the 'call signature' of the function.
 This flexibility allows the result of one function to be passed to another, and so on.
 This is known as Functional Composition and is a pretty big deal.
+
+Functional Composition is used in place of where you would otherwise find method chaining.
 
 Pipes & Functional Composition
 ==============================
@@ -459,7 +508,7 @@ const b = quadMap(a)
 
 ```
 
-And `doubleMap` and `quadMap` can be added to a 'library' object to help with grouping.
+And `doubleMap` and `quadMap` can be added to a parent object to help with grouping.
 
 ```typescript
 
@@ -481,13 +530,13 @@ const a = NumberArray.quadmap([1, 2, 3])
 
 ```
 
-> A library groups functions that work on the same call signature.
+> The parent object is used to group functions that work on the same call signature
 
 All in all - less code and more flexibility :D
 
 ## Chaining vs Piping
 
-In **lean** there is a preference towards piping functions together rather than chaining methods. The reason is because methods generally come from class + method syntax rather than function syntax.
+In **Lean** there is a preference towards piping functions together rather than chaining methods. The reason is because methods generally mean a lot of repetition across different classes that implement the same methods. It's possible to break methods into stand alone methods and reuse them - but this is generally a messy process.
 
 In saying that, there are already functional libraries out there that use chaining rather than piping, and even a mix of both chaining and piping.
 
@@ -500,7 +549,6 @@ const myList = List.of([1, 2, 3])
 myList
   .reverse()
   .append('blast off!')
-  .chain(console.log)
 
 ```
 
@@ -511,11 +559,10 @@ This is totally fine... but when writing your own functions - Lean prefers...
 fpipe(
   [1, 2, 3],
   reverse,
-  append('blast off!'),
-  chain(console.log)
+  append('blast off!')
 )
 
-Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature.
+Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
 
 ```
 
