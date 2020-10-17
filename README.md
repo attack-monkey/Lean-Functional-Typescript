@@ -245,7 +245,7 @@ Listeners are an 'agreed' way of listening for data from the 'outside world'.
 
 eg. `listenToOutside(newData => doSomethingPure(newData))`
 
-^^ This clso be written with 'point-free' style as `listenToOutside(doSomethingPure)`
+^^ This can also be written with 'point-free' style as `listenToOutside(doSomethingPure)`
 
 Listeners tend to come in a few different flavors but they all listen for new data and then pass that data into a pure function.
 
