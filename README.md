@@ -186,7 +186,7 @@ The other way to handle Impure Code is with `Io`
 
 Again start by wrapping your code in a function `() => { ... }`
 
-Instead of wrapping this in `impure`, instead wrap it in `Io.of()`
+Instead of wrapping this in `impure`, wrap it in `Io.of()`
 
 All this does is tags the `() => { ... }` as type of `Io<A>` where `A` is the type of the return value.
 
