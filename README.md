@@ -5,7 +5,7 @@ A guide to Lean Functional Typescript
 
 There is no one way to 'do' functional programming (FP) in a language like typescript, so think of **Lean** as a particular flavor. 
 
-Other variants are often very complex not very idiomatic to Javascript / Typescript.
+Other variants are often very complex and not very idiomatic to Javascript / Typescript.
 
 In **Lean**, the focus is on **simple code** that is pure, typesafe, and immutable.
 
