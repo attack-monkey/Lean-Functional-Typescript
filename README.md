@@ -18,18 +18,16 @@ So... here goes...
 Pure Code
 =========
 
-Functions (and Operations which are essentially viewed as functions too) take in input and return output - without ever mutating the input.
+Pure Functions are the building blocks of Pure Code. Pure Functions take in input and return output - without ever mutating the input.
 
 This therefore enforces data that is immutable.
 
 > ^^ We want to write code like this as much as possible.
 
-Functions:
+Pure Functions:
   - Don't mutate anything.
   - Only interact with inputs, constants, and other 'pure' functions to derive a result.
   - When passed the same set of inputs always return the same result.
-
-So functions and operations are pure.
 
 Pure functions are built from immutable operations, and recursive functions.
 
@@ -98,281 +96,15 @@ Impure Code
 
 In contrast to Pure Code, Impure Code contains mutations, unpredictable results and interactions with things outside of given functions.
 
-In **Lean** 'Impure Code' should have no effect on the Pure Code around it.
-
-To achieve this, impure code should not leak impurity into the scope.
-
-Take `console.log('cat')`. It is impure because it sends data out of the Pure Function, and prints 'cat' to the console.
-In other words it interacts with more than just inputs, constants and other 'pure' functions.
-In functional programming terms - it has a side-effect.
-`console.log('cat')` however doesn't leak scope, and so is fine to use in **Lean**.
-
-If on the other hand we have:
-
-```typescript
-
-let a = Math.random()
-a = a + 1
-
-```
-
-^^ This code is definitely impure, since `Math.random()` produces a random number and then `a` is mutated after creation.
-Moreover, it leaks impurity by assigning a random value to the variable `a` - so this code is not ok to use.
-
-The above code could be rewritten as 
-
-```typescript
-
-const a = Math.random()
-const b = a + 1
-
-```
-
-^^ ... which removes the mutation, but note that `a` is still impure due to having a random value.
-
-Impure code like this can be wrapped in a wrapper that contains the leakage.
-
-eg.
-
-```typescript
-
-impure(() =>
-  Math.random()
-)
-  .then((a: number) => {
-    const b = a + 1
-  })
-
-```
-
-`impure().then()` is void of value regardless of what it contains, and doesn't leak any impurity.
-
-The impure code is wrapped in a function, and the result is passed to the pure function inside the `then`.
-
-Here's an async version.
-
-```typescript
-
-asyncImpure(resolve => {
-  setTimeout(() => {
-    resolve(getRandom())
-  }, 1000)
-})
-  .then(a => a + 100)
-
-```
-
-Both feel alot like the familiar `Promise` syntax that we are used to.
-
-**So what benefit does this provide?**
-
-Well it forces developers to think about pure vs impure for a start. More than that though, it means that there is a focus on writing pure functions that are easy to test. While the impure code may need to load some values using getters, the tricky logic is handled by pure operations.
-
-To use the above:
-
-```
-
-npm i @attack-monkey/impure
-
-```
-
-```typescript
-
-import { impure, asyncImpure } from '@attack-monkey/impure'
-
-```
-
-The other way to handle Impure Code is with `Io`
-
-Again start by wrapping your code in a function `() => { ... }`
-
-Instead of wrapping this in `impure`, wrap it in `Io.of()`
-
-All this does is tags the `() => { ... }` as type of `Io<A>` where `A` is the type of the return value.
-
-This `Io` can now be passed around as a value until such time as it is required to run.
-
-When it is needed the `Io` can be called and the impure code is run.
-
-**What benefit does this provide?**
-
-Your Pure code can be tested by passing in a pure function in place of the `Io`.
-
-You can easily create an Io type and constructor...
-
-```typescript
-
-type Io<A> = () => A
-
-const ioOf = <A>(a: Io<A>): Io<A> => a
-
-const Io = { of: ioOf }
-
-```
-
-and use it like so...
-
-```typescript
-
-fpipe(
-  Io.of(() => Math.random()),
-  io => ({
-    io1: io,
-    io2: Io.of(() => Math.random())
-  }),
-  ({ io1, io2 }) => console.log(io1() + io2())
-)
-
-```
-
-> What is `fpipe` ? It's a piping function that you'll learn more about shortly.
-
-## Impure Code as In/Out Operations
-
-Impure code can be thought of as In/Out operations connecting Pure code to the outside world.
-
-In/Out operations use 'listeners' and 'senders'.
-
-Senders are an 'agreed' way of sending data to the 'outside world'
-
-eg. `sendToOutside(data)`
-
-Senders don't leak scope - so they are ok to use.
-
-> Note that `console.log` is an example of a Sender, since it sends data to the console.
-
-Listeners are an 'agreed' way of listening for data from the 'outside world'.
-
-eg. `listenToOutside(newData => doSomethingPure(newData))`
-
-^^ This can also be written with 'point-free' style as `listenToOutside(doSomethingPure)`
-
-Listeners tend to come in a few different flavors but they all listen for new data and then pass that data into a pure function.
-
-The Listener itself doesn't leak scope.
-
-> Note that `impure` is an example of a Listener, since it listens for the result of the impure code and then passes the result into a pure function.
-
-Listeners and Senders must be able to be used in Pure Code without causing unpredictable responses in the Pure Code.
-
-eg.
-
-```typescript
-
-const add = a => b => {
-  console.log(a + b)
-  return a + b
-}
-
-```
-
-In the above, the `console.log` Sender doesn't cause the `add` function to return an unpredictable result, so is OK to use.
-
-By using the concept of Listeners and Senders, it means that much of Javascript / Typescript already adheres to this way of thinking.
-
-Things that use this concept are:
-  - Callbacks
-  - Promises
-  - Fetch
-  - HTML event listeners
-  - Rxjs
-  - Redux
-  - Socket.io
-
-`
-
-Mutations
-=========
-
-At an application-state level, state is managed via (you guessed it) Listeners and Senders.
-Mutations can be handled by various state managers including Rxjs, Redux, etc.
-
-If you are not tied to a particular state-manager, consider **lean-state**, which is designed for **Lean** from the ground up.
-
-### A quick quick guide to using lean-state
-
-```
-
-npm i lean-state
-
-```
-
-First the State interface is created which can be thought of as a schema for your state.
-
-```typescript
-
-interface State {
-  greeting?: string
-}
-
-```
-
-followed by a DU (Discriminated Union) of listener-ids - which represent the individual listeners listening for state changes
-
-```typescript
-
-
-
-type Listeners =
-  | 'myListener'
-
-```
-
-Then register State with 
-
-```typescript
-
-`import { register } from 'lean-state`
-
-const { setState, fromState, fromStateWhile } = register<State, Listeners>()
-
-```
-
-^^ This creates a library of functions that are aware of the State and Listeners within your app.
-
-To initialise state at a given node:
-
-```typescript
-
-setState('greeting', 'hello world') // sends data to state.greeting
-
-```
-
-To register a listener and listen for state changes...
-
-```typescript
-
-// listens to changes in state.greeting and calls myPureFunction with it
-
-fromState(
-  'myListener', /* Give your listener an id - this allows automatic teardown of listeners when they are no longer needed */
-  ['greeting'], /* List the state's keys that you want to listen to */
-  ({ greeting }) => myPureFunction(greeting) /* When a change happens on the key(s) that you are listening to, the new state object is passed into this function */
-) 
-
-```
-
-To mutate data
-
-```typescript
-
-setState('greeting', 'hello again') // send a data change.
-
-```
-
-### Let
-
-Mutable variables declared with `let` syntax should only be used when contained to a small footprint and when state-management seems like overkill. Generally using a state manager is preferred because using `let` makes code impure. 
-
+Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
 
 Functions over Classes + Methods
 ================================
 
 Classes bind specific methods to an object, which more often than not mutate the object's properties.
 This not only makes class + method syntax impure - but it also locks methods against objects.
-Further to the point, a class with only static methods, may as well be written as an object literal.
 
-Pure Functions have their 'properties' passed in, and can be used on anything as long as the properties meet the 'call signature' of the function.
+Pure Functions by contrast have their 'properties' passed in, and can be used on anything as long as the properties meet the 'call signature' of the function.
 This flexibility allows the result of one function to be passed to another, and so on.
 This is known as Functional Composition and is a pretty big deal.
 
@@ -381,7 +113,7 @@ Functional Composition is used in place of where you would otherwise find method
 Pipes & Functional Composition
 ==============================
 
-Pipes take the output of one function and pass into the input of the next function, until a result is generated.
+Pipes take the output of one function and pass it into the input of the next function, until a result is generated.
 Using pipes to build complex functions out of simpler ones is known as functional composition.
 
 eg. 
@@ -403,7 +135,7 @@ const three = increment(
 
 ```
 
-The above uses **Lean**'s `fpipe` function.
+To use `fpipe`...
 
 `npm i @attack-monkey/fpipe`
 
