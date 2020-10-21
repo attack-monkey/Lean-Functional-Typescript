@@ -98,23 +98,62 @@ In contrast to Pure Code, Impure Code contains mutations, unpredictable results 
 
 Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
 
+There are many services in js / ts land that help manage mutations in a functional way.
+
+Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the need for mutation into the hands of a third prty tool - purspose built for handling state. What's more is that these tools allow your code to focus on the 'Pure' domain.
+
+** Lean State ** - https://github.com/attack-monkey/lean-state/blob/main/README.md
+** Reactstate ** - https://github.com/attack-monkey/reactstate
+** Redux ** - https://redux.js.org/
+** Rxjs ** - https://rxjs-dev.firebaseapp.com/
+
+In js / ts it is very common to send data to a third-party library / API, and listen for and act on responses.
+
+```typescript
+
+  fetch('some url')
+    .then(res => res.json())
+    .then(doSomethingWithResponse)
+
+```
+
+What is great about this API driven approach is that the API handles the impurity, and the response handler is able to be Pure. In the example above `doSomethingWithResponse` is able to be a Pure Function.
+
 Functions over Classes + Methods
 ================================
+
+Lean prefers the use of functions over classes and methods.
 
 Classes bind specific methods to an object, which more often than not mutate the object's properties.
 This not only makes class + method syntax impure - but it also locks methods against objects.
 
 Pure Functions by contrast have their 'properties' passed in, and can be used on anything as long as the properties meet the 'call signature' of the function.
-This flexibility allows the result of one function to be passed to another, and so on.
-This is known as Functional Composition and is a pretty big deal.
 
-Functional Composition is used in place of where you would otherwise find method chaining.
+For example:
+
+```typescript
+
+type ObjWithValOfNumber = {
+  value: number
+}
+
+const increment = (obj: ObjWithValOfNumber) => obj.value + 1
+
+```
+
+The above `increment` function works on any data that meets the call signature of `ObjWithValOfNumber`.
+There is no need for creating a `new ObjWithValOfNumber` to then use an `increment` method.
+All that complexity and limitation goes away.
+
+This flexibility allows functions to be combined to form even more powerful functions. 
+
+This is known as Functional Composition, and it's at the heart of Lean and FP in general.
 
 Pipes & Functional Composition
 ==============================
 
 Pipes take the output of one function and pass it into the input of the next function, until a result is generated.
-Using pipes to build complex functions out of simpler ones is known as functional composition.
+Using pipes to build complex functions out of simpler ones is a form of functional composition.
 
 eg. 
 
@@ -240,7 +279,7 @@ const b = quadMap(a)
 
 ```
 
-And `doubleMap` and `quadMap` can be added to a parent object to help with grouping.
+Since `doubleMap` and `quadMap` work on the same 'call signatures' they can be added to a parent object to help with grouping.
 
 ```typescript
 
@@ -254,6 +293,8 @@ export const NumberArray = {
 
 ```
 
+Now the `NumberArray` library can be imported which provides both `doubleMap` and `quadMap`...
+
 ```typescript
 
 import { NumberArray } from '...'
@@ -262,9 +303,21 @@ const a = NumberArray.quadmap([1, 2, 3])
 
 ```
 
-> The parent object is used to group functions that work on the same call signature
+> In Lean it is common to group functions that work on the same call signature and the `of` method is usually reserved as a `constructor` of that call signature.
 
-All in all - less code and more flexibility :D
+Eg. 
+
+```typescript
+
+const a = fpipe(
+  NumberArray.of(1,2,3),
+  NumberArray.doubleMap,
+  NumberArray.quadMap
+)
+
+```
+
+Though often times the `constructor` is not really needed so long as the data meets the call signature.
 
 ## Chaining vs Piping
 
@@ -276,7 +329,7 @@ It is common to see functional libraries that use syntax like the following...
 
 ```typescript
 
-const myList = List.of([1, 2, 3])
+const myList = List.of(1, 2, 3)
 
 myList
   .reverse()
@@ -297,8 +350,6 @@ fpipe(
 ```
 
 Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
-
-
 
 ## Pattern Matching
 
@@ -368,6 +419,6 @@ Where to from here?
 
 2. Learn how to use recursive functions.
 
-3. While an obvious path is to learn more about other flavors of Functional Programming, remember that **Lean** is about simplicity. It is better to write code that is easily digestible by others than introduce difficult to grasp concepts. **Lean** dove-tails into the javascript / typescript paradigm - where as some other concepts seem foreign to the language. With that caution in mind - learn more about FP.
+3. While an obvious path is to learn more about other flavors of Functional Programming, remember that **Lean** is about simplicity. It is better (opinion of Lean) to write code that is easily digestible by others than introduce difficult to grasp concepts. **Lean** dove-tails into the javascript / typescript paradigm - where as some other concepts seem foreign to the language. With that caution in mind - learn more about FP.
 
 4. Learn more about functional libraries - including Ramda and Rxjs
