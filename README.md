@@ -102,10 +102,10 @@ There are many services in js / ts land that help manage mutations in a function
 
 Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the need for mutation into the hands of a third prty tool - purspose built for handling state. What's more is that these tools allow your code to focus on the 'Pure' domain.
 
-** Lean State ** - https://github.com/attack-monkey/lean-state/blob/main/README.md
-** Reactstate ** - https://github.com/attack-monkey/reactstate
-** Redux ** - https://redux.js.org/
-** Rxjs ** - https://rxjs-dev.firebaseapp.com/
+* ** Lean State ** - https://github.com/attack-monkey/lean-state/blob/main/README.md
+* ** Reactstate ** - https://github.com/attack-monkey/reactstate
+* ** Redux ** - https://redux.js.org/
+* ** Rxjs ** - https://rxjs-dev.firebaseapp.com/
 
 In js / ts it is very common to send data to a third-party library / API, and listen for and act on responses.
 
