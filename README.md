@@ -263,25 +263,48 @@ const b = Number.decrement(a) // -1
 
 ```
 
-Grouping functions like this comes in very handy for functions like `map` which work differently depending on the call signature...
+Grouping functions like this comes in very handy for functions like `map`, `filter`, and `reduce` which work differently depending on the call signature...
 
 ```typescript
 
-const recordMap = <A, B>(f: (a: A) => B) =>
-    (r: Record<string, A>) => Object.values
-        ? Object.values(r).map(f)
-        : Object.keys(r).map(key => r[key]).map(f)
-
-const Record = {
-    map: recordMap
-}
+// Array_
 
 const arrayMap = <A, B>(f: (a: A) => B) =>
     (a: Array<A>) => a.map(f)
 
+const arrayFilter = <A, B>(f: (a: A) => B) =>
+    (a: Array<A>) => a.filter(f)
+
+const arrayReduce = <A, B>(f: (ac: B, cv: A, i?: number) => B) => (init: B) =>
+    (a: Array<A>): B => a.reduce(f, init)
+
 const Array_ = {
-    map: arrayMap
+    map: arrayMap,
+    filter: arrayFilter,
+    reduce: arrayReduce
 }
+
+// Record
+
+const recordMap = <A, B>(f: (a: A) => B) =>
+    (r: Record<string, A>): Record<string, B> =>
+        Object.keys(r).reduce((ac, key) => ({ ...ac, [key]: f(r[key]) }), {} as Record<string, B>)
+
+const recordFilter = <A>(f: (a: A) => boolean) =>
+    (r: Record<string, A>): Record<string, A> =>
+        Object.keys(r).filter(key => f(r[key])).reduce((ac, key) => ({ ...ac, [key]: r[key] }), {} as Record<string, A>)
+
+const recordReduce = <A, B>(f: (ac: B, cv: A, i?: number) => B) => (init: B) =>
+    (r: Record<string, A>): B =>
+        Object.keys(r).map(key => r[key]).reduce(f, init)
+
+const Record = {
+    map: recordMap,
+    filter: recordFilter,
+    reduce: recordReduce
+}
+
+const myArray = ['apple', 'cider', 'vinegar']
 
 const myRecord = {
     a: 'cat',
@@ -289,17 +312,19 @@ const myRecord = {
     c: 'monkey'
 }
 
-const myArray = ['apple', 'cider', 'vinegar']
-
 fpipe(
-    myRecord,
-    Record.map(item => item + '!!!'),
+    myArray,
+    Array_.map(item => item + '!!!'),
+    Array_.filter(item => item !== 'vinegar!!!'),
+    Array_.reduce((ac: string, cv: string) => ac + cv)('I like '),
     console.log
 )
 
 fpipe(
-    myArray,
-    Array_.map(item => item + '!!!'),
+    myRecord,
+    Record.map(item => item + '!!!'),
+    Record.filter(item => item !== 'monkey!!!'),
+    Record.reduce((ac: string, cv: string) => ac + cv)('hello '),
     console.log
 )
 
