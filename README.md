@@ -65,7 +65,7 @@ const c = fpipe(a, increment, increment) // c is 3
 
 ```
 
-> `a` is piped into the `increment` function which is piped into the next `increment function`.
+> `a` is piped into the `increment` function which is piped into the next `increment` function.
 
 **Multi argument functions** use **partial function syntax**
 
