@@ -195,7 +195,7 @@ Method chaining is a little similar to piping.
 
 ## Chaining vs Piping
 
-In **Lean** there is a preference towards piping functions together rather than chaining methods. The reason is because methods generally mean a lot of repetition across different classes that implement the same methods. It's possible to break methods into stand alone methods and reuse them - but this is generally a messy process.
+In **Lean** there is a preference towards piping functions together rather than chaining methods. The reason is that methods generally mean a lot of repetition across different classes that implement the same methods. It's possible to break methods into stand alone methods and reuse them - but this is generally a messy process.
 
 In saying that, there are already functional libraries out there that use chaining rather than piping, and even a mix of both chaining and piping.
 
