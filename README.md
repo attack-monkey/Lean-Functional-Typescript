@@ -38,7 +38,7 @@ Pure Functions:
 
 const increment = (num: number) => num + 1
 
-const 1 = a
+const a = 1
 const b = increment(a) // a is still 1, b is 2
 
 ```
