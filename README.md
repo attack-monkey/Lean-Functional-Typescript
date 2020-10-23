@@ -152,7 +152,9 @@ console.log(
 
 ```
 
-# Prototype Functions
+There is a lot of doco already out there on immutable operations and recursive functions, so we've only given a tiny taste here.
+
+## Prototype Functions
 
 Javascript / Typescript primitives, arrays and other objects all have methods pre-baked into them.
 Some of these methods are mutable (and should not be used within Pure Code).
@@ -167,30 +169,21 @@ We can for example take an array of numbers, and 'map' over them - doubling each
 
 ```
 
-There is a lot of doco already out there on immutable operations and recursive functions, so we've only given a tiny taste here.
+**Method Chaining**
 
-Impure Code
-===========
-
-In contrast to Pure Code, Impure Code contains mutations, unpredictable results and interactions with things outside of given functions.
-
-Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
-
-State Management
-================
-
-There are many services in js / ts land that help manage mutations in a functional way.
-
-Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the need for mutation into the hands of a third prty tool - purspose built for handling state. What's more is that these tools allow your code to focus on the 'Pure' domain.
-
-* **Lean State** - https://github.com/attack-monkey/lean-state
-* **Reactstate** - https://github.com/attack-monkey/reactstate
-* **Redux** - https://redux.js.org/
-* **Rxjs** - https://rxjs-dev.firebaseapp.com/
+Method chaining is a little similar to piping.
 
 
+```typescript
 
-In js / ts it is very common to send data to a third-party library / API, and listen for and act on responses.
+
+[1, 1.5, 2, 3]
+  .map(item => item * 2) // doubles everything to [2, 3, 4, 6]
+  .filter(item => item % 2 === 0) // removes any uneven numbers, leaving [2, 4, 6]
+
+```
+
+... And is a common pattern in javascript / typescript
 
 ```typescript
 
@@ -199,208 +192,6 @@ In js / ts it is very common to send data to a third-party library / API, and li
     .then(doSomethingWithResponse)
 
 ```
-
-What is great about this API driven approach is that the API handles the impurity, and the response handler is able to be Pure. In the example above `doSomethingWithResponse` is able to be a Pure Function.
-
-Functions over Classes + Methods
-================================
-
-Lean prefers the use of functions over classes and methods.
-
-Classes bind specific methods to an object, which more often than not mutate the object's properties.
-This not only makes class + method syntax impure - but it also locks methods against objects.
-
-Pure Functions by contrast have their 'properties' passed in, and can be used on anything as long as the properties meet the 'call signature' of the function.
-
-For example:
-
-```typescript
-
-type ObjWithValOfNumber = {
-  value: number
-}
-
-const increment = (obj: ObjWithValOfNumber) => obj.value + 1
-
-```
-
-The above `increment` function works on any data that meets the call signature of `ObjWithValOfNumber`.
-There is no need for creating a `new ObjWithValOfNumber` to then use an `increment` method.
-All that complexity and limitation goes away.
-
-This flexibility allows functions to be combined to form even more powerful functions. 
-
-This is known as Functional Composition, and it's at the heart of Lean and FP in general.
-
-Pipes & Functional Composition
-==============================
-
-Pipes take the output of one function and pass it into the input of the next function, until a result is generated.
-Using pipes to build complex functions out of simpler ones is a form of functional composition.
-
-eg. 
-
-```typescript
-
-// Here we are using the fpipe library which is modelled after fsharp's pipeline operator `|>`
-
-const increment = (a: number) => a + 1 
-const three = fpipe(1, increment, increment)
-
-// This is the same as calling
-
-const three = increment(
-  increment(
-    1
-  )
-)
-
-```
-
-To use `fpipe`...
-
-`npm i @attack-monkey/fpipe`
-
-`fpipe` first takes a value, followed by a series of Unary (single argument) functions. The value is passed into the first function. The result is passed into the second function and so on.
-
-```typescript
-
-const addTwo = (a: number) => fpipe(a, increment, increment)
-const three = addTwo(1)
-
-```
-
-To use `fpipe` requires functions to be Unary, but often functions require more than one argument.
-
-Enter partial functions.
-
-Unary Functions & Partial Functions
-===================================
-
-Partial functions use 'closures' to trap state and return a function with that trapped state inside.
-When the 'returned function' is then called - the 'full function' completes.
-
-eg.
-
-```typescript
-
-const add = (a: number) => (b: number) => a + b
-
-const plus6 = add(6)
-
-console.log(plus6(1)) // 7
-console.log(plus6(6)) // 12
-
-```
-
-This technique allows multi-argument functions to be used in `pipes`
-
-```typescript
-
-console.log(
-  fpipe(
-    1,
-    add(3),
-    add(2)
-  )
-)
-
-```
-
-^^ So here 1 is passed to add(3), which makes 4, which is then passed to add(2), which makes 6
-
-# Prototype Functions
-
-Javascript / Typescript primitives, arrays and other objects all have methods pre-baked into them.
-Some of these methods are mutable (and should not be used within Pure Code).
-Some of these methods are immutable and fit within the functional paradigm.
-Of particular worth are the Array.prototype functions `map`, `filter`, `reduce`.
-
-We can for example take an array of numbers, and 'map' over them - doubling each number...
-
-```typescript
-
-[1, 2, 3].map(item => item * 2)
-
-```
-
-While these functions are great to be aware of, it might also lead you to think - hey I could write my own classes with functional methods.
-
-```typescript
-
-class MyCoolArray {
-    private privateValue: number[]
-    constructor(value: number[]) {
-        this.privateValue = value
-    }
-    doubleMap() {
-        this.privateValue = this.privateValue.map(item => item * 2)
-        return this
-    }
-    value() {
-        return this.privateValue
-    }
-}
-
-const a = new MyCoolArray([1, 2, 3])
-const b = a.doubleMap().doubleMap()
-console.log(b.value())
-
-```
-
-However in writing the above class, you are mutating a property and locking methods to an object.
-
-Instead, the following is preferred:
-
-```typescript
-
-const doubleMap = (value: number[]) => value.map(item => item * 2) // still making use of the built in `.map`
-const quadMap = (x: number) => fpipe(x, doubleMap, doubleMap)
-
-const a = [1, 2, 3]
-const b = quadMap(a)
-
-```
-
-Since `doubleMap` and `quadMap` work on the same 'call signatures' they can be added to a parent object to help with grouping.
-
-```typescript
-
-import { doubleMap } from '...'
-import { quadMap } from '...'
-
-export const NumberArray = {
-  doubleMap,
-  quadMap
-}
-
-```
-
-Now the `NumberArray` library can be imported which provides both `doubleMap` and `quadMap`...
-
-```typescript
-
-import { NumberArray } from '...'
-
-const a = NumberArray.quadmap([1, 2, 3])
-
-```
-
-> In Lean it is common to group functions that work on the same call signature and the `of` method is usually reserved as a `constructor` of that call signature.
-
-Eg. 
-
-```typescript
-
-const a = fpipe(
-  NumberArray.of(1,2,3),
-  NumberArray.doubleMap,
-  NumberArray.quadMap
-)
-
-```
-
-Though often times the `constructor` is not really needed so long as the data meets the call signature.
 
 ## Chaining vs Piping
 
@@ -433,6 +224,86 @@ fpipe(
 ```
 
 Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
+
+At some stage in your functional programming journey you will embark on what a monad is, and how it works in javascript / typescript.
+You will then realise there is this whole complex world of 'lifting' values into 'higher types' that obey 'monad theory'.
+Your higher type now gets special methods applied to it, which enables mapping and chaining one higher type to another.
+This is all good - but unnecessary in Lean.
+
+In Lean, the focus is on data that meets the call signature of the function.
+
+For example, the two functions below both work on the call signature of `number` therefore any `number` can be passed into these functions. There is no need for an object to be constructed that contains the `increment` and `decrement` method.
+
+```typescript
+
+const increment = (a: number) => a + 1
+
+const decrement = (a: number) => a - 1
+
+```
+
+Since this may lead to a lot of one-off functions being created, it is common to group functions that work on the same call signature into their own object...
+
+```typescript
+
+const increment = (a: number) => a + 1
+
+const decrement = (a: number) => a - 1
+
+// note that Number is already reserved in javascript for the Number Prototype, so here we use Number_
+
+const Number_ = {
+  increment,
+  decrement
+}
+
+const a = 0
+
+const b = Number.decrement(a) // -1
+
+```
+
+Grouping functions like this comes in very handy for functions like `map` which work differently depending on the call signature...
+
+```typescript
+
+const recordMap = <A, B>(f: (a: A) => B) =>
+    (r: Record<string, A>) => Object.values
+        ? Object.values(r).map(f)
+        : Object.keys(r).map(key => r[key]).map(f)
+
+const Record = {
+    map: recordMap
+}
+
+const arrayMap = <A, B>(f: (a: A) => B) =>
+    (a: Array<A>) => a.map(f)
+
+const Array_ = {
+    map: arrayMap
+}
+
+const myRecord = {
+    a: 'cat',
+    b: 'dog',
+    c: 'monkey'
+}
+
+const myArray = ['apple', 'cider', 'vinegar']
+
+fpipe(
+    myRecord,
+    Record.map(item => item + '!!!'),
+    console.log
+)
+
+fpipe(
+    myArray,
+    Array_.map(item => item + '!!!'),
+    console.log
+)
+
+```
 
 ## Pattern Matching
 
@@ -488,6 +359,25 @@ patternMatch(
 )
 
 ```
+
+Impure Code
+===========
+
+In contrast to Pure Code, Impure Code contains mutations, unpredictable results and interactions with things outside of given functions.
+
+Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
+
+State Management
+================
+
+There are many services in js / ts land that help manage mutations in a functional way.
+
+Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the need for mutation into the hands of a third prty tool - purspose built for handling state. What's more is that these tools allow your code to focus on the 'Pure' domain.
+
+* **Lean State** - https://github.com/attack-monkey/lean-state
+* **Reactstate** - https://github.com/attack-monkey/reactstate
+* **Redux** - https://redux.js.org/
+* **Rxjs** - https://rxjs-dev.firebaseapp.com/
 
 ## Conclusion
 
