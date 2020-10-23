@@ -97,7 +97,7 @@ Pure functions are built from immutable operations, and recursive functions.
 ```typescript
 
 const a = 1
-const b = a *10
+const b = a * 10
 
 ```
 
