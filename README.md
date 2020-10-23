@@ -1,7 +1,8 @@
 # A guide to Lean Functional Typescript
 A guide to Lean Functional Typescript
 
-## Overview
+Overview
+========
 
 There is no one way to 'do' functional programming (FP) in a language like typescript, so think of **Lean** as a particular flavor. 
 
@@ -29,9 +30,67 @@ Pure Functions:
   - Only interact with inputs, constants, and other 'pure' functions to derive a result.
   - When passed the same set of inputs always return the same result.
 
-Pure functions are built from immutable operations, and recursive functions.
+### Pure Functions
 
-### Some Immutable Operations...
+**Single argument functions are known as unary functions** 
+
+```typescript
+
+const increment = (num: number) => num + 1
+
+const 1 = a
+const b = increment(a) // a is still 1, b is 2
+
+```
+
+**Unary functions can be connected together easily to form more powerful functions**
+
+```typescript
+
+const a = 1
+const c = increment(increment(a)) // c is 3
+
+```
+
+**fpipe allows you to do the above in a much cleaner way**
+
+_fpipe is modelled after fsharp's pipeline operator_
+
+**install:** `npm i @attack-monkey/fpipe`
+
+```typescript
+
+const a = 1
+const c = fpipe(a, increment, increment) // c is 3
+
+```
+
+> `a` is piped into the `increment` function which is piped into the next `increment function`.
+
+**Multi argument functions** use **partial function syntax**
+
+```typescript
+
+const add = (a: number) => (b: number) => a + b
+
+const add3 = add(3)
+const seven = add3(4)
+
+```
+
+**Which are easier to be use in pipes than regular multi-argument functions**
+
+```typescript
+
+const add = (a: number) => (b: number) => a + b
+
+const seven = fpipe(4, add(3))
+
+```
+
+### Immutable Operations
+
+Pure functions are built from immutable operations, and recursive functions.
 
 **Numbers**
 
@@ -80,12 +139,31 @@ const person2 = {
 
 ```typescript
 
-const recFn = (a = 0) =>
-  number > 50
-    ? console.log('50!!!')
-    : recFn(a + 1)
+const sum = (numArr: number[], cursor = 0): number =>
+    numArr[cursor] + (
+        numArr.length - 1 === cursor
+            ? 0
+            : sum(numArr, cursor + 1)
+    )
 
-recFn()
+console.log(
+    sum([1, 4, 20])
+) // 25
+
+```
+
+# Prototype Functions
+
+Javascript / Typescript primitives, arrays and other objects all have methods pre-baked into them.
+Some of these methods are mutable (and should not be used within Pure Code).
+Some of these methods are immutable and fit within the functional paradigm.
+Of particular worth are the Array.prototype functions `map`, `filter`, `reduce`.
+
+We can for example take an array of numbers, and 'map' over them - doubling each number...
+
+```typescript
+
+[1, 2, 3].map(item => item * 2)
 
 ```
 
@@ -98,6 +176,9 @@ In contrast to Pure Code, Impure Code contains mutations, unpredictable results 
 
 Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
 
+State Management
+================
+
 There are many services in js / ts land that help manage mutations in a functional way.
 
 Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the need for mutation into the hands of a third prty tool - purspose built for handling state. What's more is that these tools allow your code to focus on the 'Pure' domain.
@@ -106,6 +187,8 @@ Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the
 * **Reactstate** - https://github.com/attack-monkey/reactstate
 * **Redux** - https://redux.js.org/
 * **Rxjs** - https://rxjs-dev.firebaseapp.com/
+
+
 
 In js / ts it is very common to send data to a third-party library / API, and listen for and act on responses.
 
