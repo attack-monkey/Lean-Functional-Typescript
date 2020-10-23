@@ -78,7 +78,7 @@ const seven = add3(4)
 
 ```
 
-**Which are easier to be use in pipes than regular multi-argument functions**
+**Which are easier to use in pipes than regular multi-argument functions**
 
 ```typescript
 
