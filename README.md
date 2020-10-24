@@ -223,16 +223,11 @@ fpipe(
 
 ```
 
-Why? Because none of the functions are 'bound' to an object or class, but instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
-
-At some stage in your functional programming journey you will embark on what a monad is, and how it works in javascript / typescript.
-You will then realise there is this whole complex world of 'lifting' values into 'higher types' that obey 'monad theory'.
-Your higher type now gets special methods applied to it, which enables mapping and chaining one higher type to another.
-This is all good - but unnecessary in Lean.
+Why? Because none of the functions are 'bound' to `this` in a class / constructor, and instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
 
 In Lean, the focus is on data that meets the call signature of the function.
 
-For example, the two functions below both work on the call signature of `number` therefore any `number` can be passed into these functions. There is no need for an object to be constructed that contains the `increment` and `decrement` method.
+For example, the two functions below both work on the call signature of `number` therefore any `number` can be passed into these functions. There is no need for an object to be constructed from a class containing the `increment` and `decrement` method. There is no need to bind to an object's `this`
 
 ```typescript
 
@@ -242,7 +237,7 @@ const decrement = (a: number) => a - 1
 
 ```
 
-Since this may lead to a lot of one-off functions being created, it is common to group functions that work on the same call signature into their own object...
+Since this may lead to a lot of one-off functions being created, it is common to group functions that work on the same call signature into their own library object...
 
 ```typescript
 
@@ -325,6 +320,20 @@ fpipe(
     Record.map(item => item + '!!!'),
     Record.filter(item => item !== 'monkey!!!'),
     Record.reduce((ac: string, cv: string) => ac + cv)('hello '),
+    console.log
+)
+
+```
+
+Even though the `Array_` and `Record` library have a set of methods, the data being passed into these methods are not bound to those methods.
+For example, there may be a different library that acts on just number arrays - let's call it `NumberArray`. An array of numbers would therefore be able to be passed into any of the methods from both `Array_` and `NumberArray` and may look something like...
+
+```typescript
+
+fpipe(
+    [1, 2, 3],
+    Array_.map(item => item * 2),
+    NumberArray.sum
     console.log
 )
 
