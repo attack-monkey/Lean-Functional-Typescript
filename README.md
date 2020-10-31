@@ -254,7 +254,7 @@ const Number_ = {
 
 const a = 0
 
-const b = Number.decrement(a) // -1
+const b = Number_.decrement(a) // -1
 
 ```
 
