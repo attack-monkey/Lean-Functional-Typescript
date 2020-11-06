@@ -25,7 +25,7 @@ To get going with Lean, download the **prelude**
 
 It works with both javascript and typescript...
 
-Javascript
+Node (Javascript using require)
 
 ```javascript
 
