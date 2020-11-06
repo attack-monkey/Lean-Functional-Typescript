@@ -458,7 +458,7 @@ Here it's possible to create a type that can be matched against at run-time, and
 
 Notice how the compile-time `Cat` type is actually built from the run-time type.
 
-The patternMatch 'with_' infers the type onto the matched object - so the `doCatThing` function gets a value guaranteed to be of type `Cat`.
+The `fmatch` `with_` infers the type onto a matched object - so the `doCatThing` function gets a value guaranteed to be of type `Cat`.
 
 ```typescript
 
