@@ -52,9 +52,21 @@ const c = increment(increment(a)) // c is 3
 
 ```
 
+**Pipes allow you to do the above in a much cleaner way**
+
+In FP languages such as F# you can write the above as:
+
+```fsharp
+
+let a = 1 // equivalent to js const
+
+let c = a |> increment |> increment
+
+```
+
 **fpipe allows you to do the above in a much cleaner way**
 
-_fpipe is modelled after fsharp's pipeline operator_
+_fpipe is modelled after F#'s pipeline operator_
 
 **install:** `npm i @attack-monkey/fpipe`
 
