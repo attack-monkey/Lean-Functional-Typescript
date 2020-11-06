@@ -25,7 +25,7 @@ To get going with Lean, download the **prelude**
 
 It works with both javascript and typescript...
 
-Node (Javascript using require)
+Node (Javascript using `require`)
 
 ```javascript
 
@@ -38,7 +38,7 @@ match('hello')
   
 ```
 
-Typescript
+Typescript / Javascript using `import`
 
 ```typescript
 
