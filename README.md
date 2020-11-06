@@ -132,7 +132,7 @@ Which one is better?
 
 It doesn't really matter. `fpipe` is leaner in most situations, but `pipe` will work in all situations.
 
-**Most of the time in Lean, we use **partial function syntax to write functions...**
+**Most of the time in Lean, we use **partial function syntax to write functions**
 
 ```typescript
 
