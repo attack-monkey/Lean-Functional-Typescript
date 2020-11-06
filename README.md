@@ -430,7 +430,7 @@ fpipe(
 
 It's possible to write classes that don't mutate properties and that still achieve chainability.
 
-Rather than mutate the property `a`, the `pipe` method returns a new `Pipe` class altogether.
+Rather than mutate the property `a`, the `pipe` method returns a new `Pipe` object altogether.
 
 ```typescript
 
