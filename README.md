@@ -16,6 +16,43 @@ Instead **Lean** keeps things simple and actually feeling like Javascript / Type
 
 So... here goes...
 
+Install
+=======
+
+To get going with Lean, download the **prelude**
+
+`npm i @attack-monkey/lean-f-ts-prelude`
+
+It works with both javascript and typescript...
+
+Javascript
+
+```javascript
+
+const { match, $string, $unknown } = require('@attack-monkey/lean-f-ts-prelude')
+
+match('hello')
+  .with_($string, s => console.log(s + ' world'))
+  .with_($unknown, _ => console.log('unable to match'))
+  .done()
+  
+```
+
+Typescript
+
+```typescript
+
+import { match, $string, $unknown } from '@attack-monkey/lean-f-ts-prelude'
+
+match('hello')
+  .with_($string, s => console.log(s + ' world'))
+  .with_($unknown, _ => console.log('unable to match'))
+  .done()
+  
+```
+
+We recommend typescript for the type-safety that it gives.
+
 Pure Code
 =========
 
@@ -72,8 +109,6 @@ and while there is not yet (though there is a proposal for this) a pipeline oper
 
 **fpipe is modelled after F#'s pipeline operator**
 
-**install:** `npm i @attack-monkey/fpipe`
-
 ```typescript
 
 const a = 1
@@ -97,9 +132,7 @@ Which one is better?
 
 It doesn't really matter. `fpipe` is leaner in most situations, but `pipe` will work in all situations.
 
-**Multi argument functions** use **partial function syntax**
-
-Most of the time in Lean, we use **partial function syntax** to write functions...
+**Most of the time in Lean, we use **partial function syntax to write functions...**
 
 ```typescript
 
@@ -235,7 +268,7 @@ Infact `pipe` uses method-chaining to pipe the result of one function into the n
 
 ## Chaining vs Piping
 
-It is common to see functional libraries provide classes that 'lift' values to provide methods that then work on the value.
+It is common to see functional libraries provide classes that 'lift' values to provide methods that then work on the value or collection of values inside.
 
 ```typescript
 
@@ -248,7 +281,7 @@ const myNewList = myList
 
 ```
 
-This is totally fine... but it means that `reverse` and `append` are pretty much bound to the `List` class. If those methods are then to be used in another class, we have to use class extensions, repeated code, or messy mixins.
+This is totally fine... but it means that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to use class extensions, repeated code, or messy mixins.
 
 If however `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
@@ -377,6 +410,8 @@ fpipe(
 
 ```
 
+> Note that `Record` and `Array_` are provided in the Prelude.
+
 Even though the `Array_` and `Record` library have a set of methods, the data being passed into these methods are not bound to those methods.
 For example, there may be a different library that acts on just number arrays - let's call it `NumberArray`. An array of numbers would therefore be able to be passed into any of the methods from both `Array_` and `NumberArray` and may look something like...
 
@@ -417,13 +452,7 @@ const pipe = Pipe.of
 
 In functional languages like F# most if / then / else style logic is handled through Pattern Matching.
 
-Using 'Matcha', similar pattern matching of complex objects is possible in Javascript / Typescript.
-
-```
-
-npm i matcha_match
-
-```
+Lean also provides pattern matching.
 
 Here it's possible to create a type that can be matched against at run-time, and based on that match, trigger a function.
 
@@ -432,11 +461,6 @@ Notice how the compile-time `Cat` type is actually built from the run-time type.
 The patternMatch 'with_' infers the type onto the matched object - so the `doCatThing` function gets a value guaranteed to be of type `Cat`.
 
 ```typescript
-
-import { patternMatch, with_ } from 'matcha_match/lib/index'
-import { $string } from 'matcha_match/lib/runtime-interfaces/$string'
-import { $literal } from 'matcha_match/lib/runtime-interfaces/$literal'
-import { $unknown } from 'matcha_match/lib/runtime-interfaces/$unknown'
 
 const $runtimeCatType = {
   animal: $literal<'cat'>('cat'),
@@ -460,13 +484,34 @@ const doCatThing = (cat: Cat) => {
   console.log(`meow... my name is ${cat.name.first}`)
 }
 
-patternMatch(
+fmatch(
   myCat,
   with_($runtimeCatType, doCatThing),
   with_($unknown, _ => console.log('not a cat'))
 )
 
 ```
+
+Like `pipe` / `fpipe`, Lean provides both `match` / `fmatch`.
+
+`fmatch` is limited to 5 `with_` handles where as `match` is unlimited.
+
+**Example using `match`**
+
+```typescript
+
+match('hello')
+  .with_($string, s => console.log(s + ' world'))
+  .with_($unknown, _ => console.log('unable to match'))
+  .done()
+  
+```
+
+Pattern matching uses the matcha-match library, and is worth getting well aquainted with - as it provides powerful, clean ways of handling logic.
+
+Read more at [docs](https://www.npmjs.com/package/matcha_match)
+
+> Note that Lean calls matcha-match's `patternMatch` function `fmatch`, and provides the 'object / method' variant of `match`.
 
 Impure Code
 ===========
