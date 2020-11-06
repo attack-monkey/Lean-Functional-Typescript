@@ -52,6 +52,8 @@ const c = increment(increment(a)) // c is 3
 
 ```
 
+### Pipes
+
 **Pipes allow you to do the above in a much cleaner way**
 
 In FP languages such as F# you can write the above as:
@@ -64,9 +66,11 @@ let c = a |> increment |> increment
 
 ```
 
-**fpipe allows you to do the above in a much cleaner way**
+> `a` is piped into the `increment` function which is piped into the next `increment` function.
 
-_fpipe is modelled after F#'s pipeline operator_
+and while there is not yet (though there is a proposal for this) a pipeline operator in js / ts, Lean does provide some equivalents.
+
+**fpipe is modelled after F#'s pipeline operator**
 
 **install:** `npm i @attack-monkey/fpipe`
 
@@ -77,9 +81,25 @@ const c = fpipe(a, increment, increment) // c is 3
 
 ```
 
-> `a` is piped into the `increment` function which is piped into the next `increment` function.
+`fpipe` achieves the effect of piping by using a 'variable argument function' - but it is limited to up to 10 functions.
+
+**pipe achieves the same effect by using a object / method approach and while is more verbose - is not limited**
+
+
+```typescript
+
+const a = 1
+const c = pipe(a).pipe(increment).pipe(increment).done() // c is 3
+
+```
+
+Which one is better? 
+
+It doesn't really matter. `fpipe` is leaner in most situations, but `pipe` will work in all situations.
 
 **Multi argument functions** use **partial function syntax**
+
+Most of the time in Lean, we use **partial function syntax** to write functions...
 
 ```typescript
 
@@ -183,11 +203,9 @@ We can for example take an array of numbers, and 'map' over them - doubling each
 
 **Method Chaining**
 
-Method chaining is a little similar to piping.
-
+Method chaining works by calling a method on an object, which produces a result. The result itself has methods, which can then be called, and so on.
 
 ```typescript
-
 
 [1, 1.5, 2, 3]
   .map(item => item * 2) // doubles everything to [2, 3, 4, 6]
@@ -205,37 +223,59 @@ Method chaining is a little similar to piping.
 
 ```
 
+Infact `pipe` uses method-chaining to pipe the result of one function into the next pipe.
+
+```typescript
+
+  pipe(1)
+    .pipe(increment)
+    .pipe(increment)
+
+```
+
 ## Chaining vs Piping
 
-In **Lean** there is a preference towards piping functions together rather than chaining methods. The reason is that methods generally mean a lot of repetition across different classes that implement the same methods. It's possible to break methods into stand alone methods and reuse them - but this is generally a messy process.
-
-In saying that, there are already functional libraries out there that use chaining rather than piping, and even a mix of both chaining and piping.
-
-It is common to see functional libraries that use syntax like the following...
+It is common to see functional libraries provide classes that 'lift' values to provide methods that then work on the value.
 
 ```typescript
 
 const myList = List.of(1, 2, 3)
 
-myList
+const myNewList = myList
   .reverse()
   .append('blast off!')
+  .done()
 
 ```
 
-This is totally fine... but when writing your own functions - Lean prefers...
+This is totally fine... but it means that `reverse` and `append` are pretty much bound to the `List` class. If those methods are then to be used in another class, we have to use class extensions, repeated code, or messy mixins.
+
+If however `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
 ```typescript
 
-fpipe(
-  [1, 2, 3],
-  reverse,
-  append('blast off!')
-)
+const myNewList = 
+  fpipe(
+    [1, 2, 3],
+    reverse,
+    append('blast off!')
+  )
 
 ```
 
-Why? Because none of the functions are 'bound' to `this` in a class / constructor, and instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
+or
+
+```typescript
+
+const myNewList =
+  pipe([1,2,3])
+    .pipe(reverse)
+    .pipe(append('blast off!'))
+    .done()
+
+```
+
+None of the functions are 'bound' to `this` in a class / constructor, and instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
 
 In Lean, the focus is on data that meets the call signature of the function.
 
@@ -348,6 +388,28 @@ fpipe(
     NumberArray.sum
     console.log
 )
+
+```
+
+## If you do need to write functional classes... you can do so without mutating properties...
+
+It's possible to write classes that don't mutate properties and that still achieve chainability.
+
+Rather than mutate the property `a`, the `pipe` method returns a new `Pipe` class altogether.
+
+```typescript
+
+class Pipe <A> { 
+    private a: A
+    static of = <A>(a: A) => new Pipe(a)
+    constructor (a: A) {
+        this.a = a
+    }
+    pipe = <B>(f: (a: A) => B) => Pipe.of(f(this.a))
+    done = () => this.a
+}
+
+const pipe = Pipe.of
 
 ```
 
