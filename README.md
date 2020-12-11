@@ -116,7 +116,7 @@ const c = fpipe(a, increment, increment) // c is 3
 
 ```
 
-`fpipe` achieves the effect of piping by using a 'variable argument function' - but it is limited to up to 10 functions.
+`fpipe` achieves the effect of piping by using a 'variable argument function' - but it is limited. It can only pipe through up to 10 functions.
 
 **pipe achieves the same effect by using a object / method approach and while is more verbose - is not limited**
 
