@@ -77,6 +77,8 @@ const a = freeze({
 
 ```
 
+### Pure Functions
+
 Pure Functions are the building blocks of Pure Code. Pure Functions take in input and return output - without ever mutating the input.
 
 This therefore enforces data that is immutable.
@@ -87,9 +89,7 @@ Pure Functions:
   - Don't mutate anything.
   - Only interact with inputs, constants, and other 'pure' functions to derive a result.
   - When passed the same set of inputs always return the same result.
-
-### Pure Functions
-
+  
 **Single argument functions are known as unary functions** 
 
 ```typescript
@@ -562,7 +562,59 @@ In contrast to Pure Code, Impure Code contains mutations, unpredictable results 
 
 Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
 
+In Lean, anything that is external to Pure Code is regarded as **The Outside World** and Impure.
+The functions and methods that interact with the Outside World are referred to as **macros**.
 
+**Common in-built macros**
+
+- `console.log` for example fits the description of macro, since it is a function that interacts with the machine's / brower's console.
+- `Date.now()` interacts with the machine to get the current timestamp.
+- `Math.random` returns a random number value - which is impure.
+- `setTimeout` / `setInterval` interacts with the event-loop.
+
+**Macros also include:**
+
+- SDK's that interact with Databases
+- The `fetch` api that interacts with outside services
+- Anything to do with the DOM
+- Anything that interacts with the file system or browser storage
+- Anything that interacts with mutable state
+
+So ... it's a lot
+
+**Macros connect to the Outside World in 3 ways**
+
+- By sending data to it
+- By listening for changes in the outside world and then calling pure functions to handle those changes
+- By calling the outside world for it's current state
+
+**The Virtual Outside World**
+
+Using `let`, `var`, and global variable declarations to store mutable state - is essentially declaring it as Impure, and therefore - outside of the Pure Domain. To separate this type of code from the Pure Domain, it is reccomended to abstract this to a `macros` folder. Pure Code should then only interact with it as any other macro.
+
+**Getting Impure Values**
+
+Getting values from the outside world means that you are allowing unknown values into the Pure Domain.
+This can very easily make a surrounding function impure if it causes it to return unpredictable values.
+
+Instead it is common to wrap getters in a block scope, and then call the pure function at the end of the series of getters.
+The block scope means that those unknown values don't pollute the outer scope.
+
+```typescript
+
+{
+    const x = getSomethingFromOutsideWorld()
+    const y = getSomethingElseFromOutsideWorld()
+    pure(x)(y)
+}
+
+function pure (x: string) {
+    return function (y: string) {
+        return console.log(`hello ${x} ${y}`)
+    }
+}
+
+```
 
 State Management
 ================
