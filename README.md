@@ -163,7 +163,7 @@ somePromise
 
 ```
 
-** and Lean Prelude also provides `flow` which is more powerful than promises ( and can also be sync / async - so can be used instead of `pipe` )**
+**And Lean Prelude also provides `flow` which is more powerful than promises ( and can also be sync / async - so can be used instead of `pipe` )**
 
 ```typescript
 
