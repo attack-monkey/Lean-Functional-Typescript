@@ -56,6 +56,27 @@ We recommend typescript for the type-safety that it gives.
 Pure Code
 =========
 
+Lean has a heavy emphasis on writing Pure Code where ever possible.
+
+Pure Code begins with the idea that every variable is immutable.
+
+Using the `const` keyword to declare variables ensures that they cannot be reassigned a new value after declaration.
+This makes strings, numbers, and booleans effectively immutable - but doesn't do the same for objects / arrays.
+Since `const` only makes a variable non-reassignable, it's still possible to mutate an objects properties and methods.
+
+The Lean Prelude provides `freeze` which can be wrapped around an object / array to ensure that the objects keys cannot be reassigned another value.
+If however the object contains deeper objects below - then they also need to be wrapped ...
+
+```typescript
+
+const a = freeze({
+  first: freeze({
+    second: 'protected'
+  })
+})
+
+```
+
 Pure Functions are the building blocks of Pure Code. Pure Functions take in input and return output - without ever mutating the input.
 
 This therefore enforces data that is immutable.
@@ -131,6 +152,27 @@ const c = pipe(a).pipe(increment).pipe(increment).done() // c is 3
 Which one is better? 
 
 It doesn't really matter. `fpipe` is leaner in most situations, but `pipe` will work in all situations.
+
+**Also ... notice how Promises are a form of async pipe**
+
+```typescript
+
+somePromise
+  .then(increment)
+  .then(increment)
+
+```
+
+** and Lean Prelude also provides `flow` which is more powerful than promises ( and can also be sync / async - so can be used instead of `pipe` )**
+
+```typescript
+
+flow(1)
+  .then(increment)
+  .then(increment)
+  .done()
+
+```
 
 **Most of the time in Lean, we use partial function syntax to write functions...**
 
@@ -519,6 +561,8 @@ Impure Code
 In contrast to Pure Code, Impure Code contains mutations, unpredictable results and interactions with things outside of given functions.
 
 Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
+
+
 
 State Management
 ================
