@@ -25,32 +25,6 @@ To get going with Lean, download the **prelude**
 
 It works with both javascript and typescript...
 
-Node (Javascript using `require`)
-
-```javascript
-
-const { match, $string, $unknown } = require('@attack-monkey/lean-f-ts-prelude')
-
-match('hello')
-  .with_($string, s => console.log(s + ' world'))
-  .with_($unknown, _ => console.log('unable to match'))
-  .done()
-  
-```
-
-Typescript / Javascript using `import`
-
-```typescript
-
-import { match, $string, $unknown } from '@attack-monkey/lean-f-ts-prelude'
-
-match('hello')
-  .with_($string, s => console.log(s + ' world'))
-  .with_($unknown, _ => console.log('unable to match'))
-  .done()
-  
-```
-
 We recommend typescript for the type-safety that it gives.
 
 Pure Code
@@ -58,7 +32,23 @@ Pure Code
 
 Lean has a heavy emphasis on writing Pure Code where ever possible.
 
-Pure Code begins with the idea that every variable is immutable.
+Pure Code is broken into two main concepts:
+  1. Pure Functions
+  2. Pure Macros
+
+Pure Functions are functions / operations that:
+  - Don't mutate anything.
+  - Only interact with inputs, constants, and other 'pure' functions to derive a result.
+  - When passed the same set of inputs, always return the same result.
+  
+Pure Macros are very similar except that they also contain a side effect.
+That is they give instructions to things outside of the Pure Function.
+They still only use inputs, constants, and other 'pure' functions ( or 'pure' macros ) to derive a result.
+They still return the same result, when passed a same set of inputs.
+
+Before Pure Macros though, we'll cover Pure Functions.
+
+One of the guiding principles of Pure Functions is that every variable (aka Value) is immutable.
 
 Using the `const` keyword to declare variables ensures that they cannot be reassigned a new value after declaration.
 This makes strings, numbers, and booleans effectively immutable - but doesn't do the same for objects / arrays.
@@ -76,6 +66,8 @@ const a = freeze({
 })
 
 ```
+
+Providing that people follow Lean correctly, there is no real need to use `freeze`, but it is there should extra protection be required.
 
 ### Pure Functions
 
