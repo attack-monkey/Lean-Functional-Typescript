@@ -41,7 +41,7 @@ Pure Functions are functions / operations that:
   - Only interact with inputs, constants, and other 'pure' functions to derive a result.
   - When passed the same set of inputs, always return the same result.
   
-Pure Macros are very similar except that they also contain a side effect.
+Where Pure Functions are core to any Functional Programming, Pure Macros are a Lean Concept. They are very similar to Pure Functions except that they also contain a side effect.
 That is they give instructions to things outside of the Pure Function.
 They still only use inputs, constants, and other 'pure' functions ( or 'pure' macros ) to derive a result.
 They still return the same result, when passed a same set of inputs.
