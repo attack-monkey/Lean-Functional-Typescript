@@ -590,6 +590,122 @@ now(t => console.log('the time is ' + t))
 
 ```
 
+Mutables (LIBRARIES COMING SOON)
+========
+
+A Mutable is a safe store of mutable data.
+
+They use the lean-mutable library (coming soon).
+
+The `mutable` macro wraps a value, turning it into a Mutable and then fires the Mutable into an awaiting pure macro.
+The Mutable is unreachable outside of the scope of the mutable macro.
+
+To update the value of a mutable use `set`, which takes the Mutable ( + an optional pass-in value ), along with a pure function to produce a new state.
+
+Use `unwrap` to access the current state.
+
+```typescript
+
+mutable(1)(counter => {
+    set(counter)(v => v + 1) // update to 2
+    set(counter)(v => v + 1) // update to 3
+    unwrap(counter)(v => {   // unwrap
+        console.log(v)       // logs 3
+    })
+                             // goes out of scope - no longer reachable
+})
+
+```
+
+The `mutable`, `unwrap`, and `set` macros are all 'pure' macros - but not 'pure' functions.
+By definition a macro 'does' something other than return a value, and in the case of set - it's mutating state.
+The 'Mutable' makes working with mutable state safer, since unwrapped state is always passed to an accompanying pure macro, and updates always occur using pure functions.
+
+Mutables can also be subscribed to.
+Subscriptions must have id's which prevent memory leaks associated with id-less subscriptions.
+The id can be used later to tear down a subscription with destroy.
+Subscriptions also have a safeguard whereby a set cannot be called during the emit phase of the set / subscribe - which prevents infinite loops.
+
+```typescript
+
+mutable(1)(counter => {
+    subscribe('s1')(counter)(v => { // s1 is the Id that we are assigning to our subscription.
+        console.log(`value is now ${v}`)
+        set(counter)(v => v + 1) // This will throw an error because setting during the emit phase will otherwise cause infinite loops.
+    })
+    set(counter)(v => v)     // set with current
+    set(counter)(v => v + 1) // update to 2
+    set(counter)(v => v + 1) // update to 3
+                             // goes out of scope - no longer reachable
+})
+
+```
+
+The following shows how to create a well described pure macro for a Mutable to be passed into.
+The pure macro can then be tested easily.
+
+```typescript
+
+type Person = {
+    name: string
+    age: number
+}
+type People = Record<string, Person>
+
+const init: People = {
+    person1: {
+        name: 'Ben',
+        age: 39
+    },
+    person2: {
+        name: 'Sherri',
+        age: 30
+    }
+}
+
+const pureMacro = (people: Mutable<People>) => {
+
+    const op1 = subscribe('people-sub-1')(people)(v => {
+        Object.keys(v).forEach(key => {
+            console.log(`hello ${v[key].name}, you are ${v[key].age}`)
+        })
+    })
+
+    const op2 = set(people)(v => ({...v, person1: { name: v.person1.name, age: v.person1.age + 1 } }))
+
+    return {
+        macro: 'pureMacro',
+        params: [people],
+        subMacros: [
+            op1,
+            op2
+        ]
+    }
+}
+
+```
+
+It's easy to test that the pureMacro is performing correctly by logging it's response.
+Since it's response describes what it is doing, we can ensure that it is behaving as expected.
+To create a stub Mutable for passing into the pureMacro (for testing) - use `mutableStub`.
+
+test...
+
+```typescript
+
+console.log(`test\n`, pureMacro(mutableStub(init)))
+
+```
+
+Run for real...
+
+```typescript
+
+mutable(init)(pureMacro)
+
+```
+
+
 State Management
 ================
 
