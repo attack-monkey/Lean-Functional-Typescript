@@ -705,18 +705,39 @@ mutable(init)(pureMacro)
 
 ```
 
+### A Quick Application Boilerplate with mutable
 
-State Management
-================
+The beauty of the Pure Macro and `mutable` is that the flow of the application is in one direction.
+A globalMutable is able to be set up for the outer most variables of an application.
+A subscription can be set up to listen to changes in the globalMutable, which re-runs the application ( which is a Pure Macro ).
+Within the Subscription itself, event listeners are able to trigger update the globalMutable when necessary.
 
-There are many services in js / ts land that help manage mutations in a functional way.
+Even though the application uses mutable values - it never knows that it is, and can behave in a completely pure way!
 
-Using a State Manager such as Lean-state, Redux, or even Rxjs shifts most of the need for mutation into the hands of a third prty tool - purspose built for handling state. What's more is that these tools allow your code to focus on the 'Pure' domain.
+```typescript
 
-* **Lean State** - https://github.com/attack-monkey/lean-state
-* **Reactstate** - https://github.com/attack-monkey/reactstate
-* **Redux** - https://redux.js.org/
-* **Rxjs** - https://rxjs-dev.firebaseapp.com/
+const globalInit = {
+    view: 'view1'
+}
+
+const main = () =>
+    mutable(globalInit)(globalMutable => {
+        subscribe('global-sub-1')(globalMutable)(globalValues => {
+            // Construct the main application here.
+            // Set up event handlers that then update the globalMutable.
+            // When the globalMutable changes - the main application will re-run with the new globalValues.
+            console.log(globalValues.view)
+        })
+        // To kick off the subscription - update the value of the globalMutable - even if it's with the same value.
+        // v is used as shorthand for the unwrapped value of the Mutable
+        set(globalMutable)(v => v)
+    })
+
+main()
+
+```
+
+The application is able to be split into layers, so that the whole application doesn't have to re-run every time a low-level mutable changes state.
 
 ## Conclusion
 
@@ -728,9 +749,8 @@ functional programming into a simple and easy-to-apply set of concepts and examp
 Where to from here?
 
 1. Learn how to write immutable operations.
-
 2. Learn how to use recursive functions.
-
-3. While an obvious path is to learn more about other flavors of Functional Programming, remember that **Lean** is about simplicity. It is better (opinion of Lean) to write code that is easily digestible by others than introduce difficult to grasp concepts. **Lean** dove-tails into the javascript / typescript paradigm - where as some other concepts seem foreign to the language. With that caution in mind - learn more about FP.
-
-4. Learn more about functional libraries - including Ramda and Rxjs
+3. Learn about pattern matching.
+4. Learn about flow, the alternative to promises.
+5. While an obvious path is to learn more about other flavors of Functional Programming, remember that **Lean** is about simplicity. It is better (opinion of Lean) to write code that is easily digestible by others than introduce difficult to grasp concepts. **Lean** dove-tails into the javascript / typescript paradigm - where as some other concepts seem foreign to the language. With that caution in mind - learn more about FP.
+6. Learn more about functional libraries - including Ramda and Rxjs
