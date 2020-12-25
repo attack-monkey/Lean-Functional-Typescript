@@ -4,20 +4,16 @@ A guide to Lean Functional Typescript
 Overview
 ========
 
-There is no one way to 'do' functional programming (FP) in a language like typescript, so think of **Lean** as a particular flavor. 
+Lean is a Pure Functional way of writing Typescript applications.
 
-Other variants are often very complex and not very idiomatic to Javascript / Typescript.
+It achieves purity through the concept of Pure Functions and Pure Macros.
 
-In **Lean**, the focus is on **simple code** that is pure, typesafe, and immutable.
-
-**Lean** deliberately avoids many hardcore functional concepts because they often complicate things for teams.
-
-Instead **Lean** keeps things simple and actually feeling like Javascript / Typescript.
-
-So... here goes...
+It is less 'Haskell' inspired and more ML / F# inspired which is far easier to grasp and makes writing large scale applications a breeze.
 
 Install
 =======
+
+While Lean is more conceptual than anything else, there are utility modules to bring some of the concepts alive.
 
 To get going with Lean, download the **prelude**
 
@@ -30,20 +26,59 @@ We recommend typescript for the type-safety that it gives.
 Pure Code
 =========
 
-Lean has a heavy emphasis on writing Pure Code where ever possible.
+Pure Code is broken into three main concepts:
+  1. Immutable Operations
+  2. Pure Functions
+  3. Pure Macros
 
-Pure Code is broken into two main concepts:
-  1. Pure Functions
-  2. Pure Macros
+**Immutable Operations**
 
-Pure Functions are functions / operations that:
+Immutable Operations treat variables as immutable values - that cannot be changed once declared. **This is the Golden Rule of Lean**.
+Instead of mutating values, create new values using the previous value as a starting point.
+
+Eg.
+
+```typescript
+
+const a = { greeting: 'hello ', thing: '' }
+const b = { ...a, thing: 'world' }
+
+console.log(a) // hello (i.e. no mutation)
+console.log(b) // hello world
+
+```
+
+Immutable Operations can also be recursive and are generally preferred to loops - because loops mutate values.
+
+### An example of a recursive function
+
+```typescript
+
+const sum = (numArr: number[], cursor = 0): number =>
+    numArr[cursor] + (
+        numArr.length - 1 === cursor
+            ? 0
+            : sum(numArr, cursor + 1)
+    )
+
+console.log(
+    sum([1, 4, 20])
+) // 25
+
+```
+
+**Pure Functions**
+
+Pure Functions:
   - Don't mutate anything.
-  - Only interact with inputs, constants, and other 'pure' functions to derive a result.
+  - Only interact with inputs, and other 'pure' functions to derive a result.
   - When passed the same set of inputs, always return the same result.
-  
-Where Pure Functions are core to any Functional Programming, Pure Macros are a Lean Concept. They are very similar to Pure Functions except that they also contain side effects.
+
+**Pure Macros**
+
+Where Pure Functions are core to any Functional Programming, Pure Macros are a Lean Concept. 
+They are very similar to Pure Functions except that they also contain side effects.
 That is, they give instructions to things outside of the Pure Function, and therefore change the world around them.
-They still only use inputs, constants, and other 'pure' functions ( or 'pure' macros ) to derive a result.
 They still return the same result, when passed the same set of inputs.
 
 ### Pure Functions
@@ -57,20 +92,11 @@ Using the `const` keyword to declare variables ensures that they cannot be reass
 This makes strings, numbers, and booleans effectively immutable - but doesn't do the same for objects / arrays.
 Since `const` only makes a variable non-reassignable, it's still possible to mutate an objects properties and methods.
 
-The Lean Prelude provides `freeze` which can be wrapped around an object / array to ensure that the objects keys cannot be reassigned another value.
-If however the object contains deeper objects below - then they also need to be wrapped ...
+Providing the Lean Golden rule is followed - then this is no problem.
 
-```typescript
+**Golden Rule**
 
-const a = freeze({
-  first: freeze({
-    second: 'protected'
-  })
-})
-
-```
-
-Providing that people follow Lean correctly, there is no real need to use `freeze`, but it is there should extra protection be required.
+Variables must be treated as immutable values - that cannot be changed once declared.
 
 #### Now back to Pure Functions
 
@@ -132,7 +158,7 @@ const c = fpipe(a, increment, increment) // c is 3
 
 ```
 
-`fpipe` achieves the effect of piping by using a 'variable argument function' - but it is limited. It can only pipe through up to 10 functions.
+`fpipe` achieves the effect of piping by using a function that takes a variable number of arguments - but it is limited. It can only pipe through up to 10 functions.
 
 **pipe achieves the same effect and while is more verbose - is not limited**
 
@@ -169,6 +195,8 @@ flow(1)
 
 ```
 
+**We'll get to flows later on**
+
 **Most of the time in Lean, we use partial function syntax to write functions...**
 
 A partial function is a function that returns another function, and so on, until the full function is played out.
@@ -189,70 +217,6 @@ const seven = add3(4)
 const add = (a: number) => (b: number) => a + b
 
 const seven = fpipe(4, add(3))
-
-```
-
-### Immutable Operations
-
-Pure functions are built from immutable operations, and recursive functions.
-
-**Numbers**
-
-```typescript
-
-const a = 1
-const b = a * 10
-
-```
-
-**Strings**
-
-```typescript
-
-const a = 'hello'
-const b = a + ' world'
-
-```
-
-**Arrays**
-
-```typescript
-
-const a = [1,2,3]
-const b = [...a, 4,5,6]
-
-```
-
-**Objects**
-
-```typescript
-
-const person1 = {
-  name: 'ben',
-  isType: 'person'
-}
-
-const person2 = {
-  ...a,
-  name: 'jan'
-}
-
-```
-
-### An example of a recursive function
-
-```typescript
-
-const sum = (numArr: number[], cursor = 0): number =>
-    numArr[cursor] + (
-        numArr.length - 1 === cursor
-            ? 0
-            : sum(numArr, cursor + 1)
-    )
-
-console.log(
-    sum([1, 4, 20])
-) // 25
 
 ```
 
@@ -320,7 +284,7 @@ const myNewList = myList
 
 ```
 
-This is totally fine... but it means that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
+This is OK... but is not Lean. It means that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
 
 If however `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
@@ -347,7 +311,7 @@ const myNewList =
 
 ```
 
-None of the functions are 'bound' to `this` in a class / constructor, and instead can work on any values that meet their call signature. Simplicity and flexibility is baked in.
+None of the functions are 'bound' to `this` in a class / constructor, and instead can work on any values that meet their call signature. Simplicity and flexibility are baked in. **This is what Lean is all about**
 
 **In Lean, the focus is on data that meets the call signature of the function.**
 
@@ -361,7 +325,7 @@ const decrement = (a: number) => a - 1
 
 ```
 
-Since this may lead to a lot of one-off functions being created, it is common to group functions that work on the same call signature into their own library object...
+It is common to group functions that work on the same call signature into their own library object...
 
 ```typescript
 
@@ -516,18 +480,14 @@ Read more at [docs](https://www.npmjs.com/package/matcha_match)
 
 > Note that Lean calls matcha-match's `patternMatch` function `fmatch`, and `match` is also a wrapper around `patternMatch`.
 
-Impure Code
+Pure Macros
 ===========
-
-In contrast to Pure Code, Impure Code contains mutations, unpredictable results and interactions with things outside of given functions.
-
-Impure Code isn't bad when used appropriately, however most of the time it can be avoided by using Pure Functions and Immutable Operations instead.
 
 In Lean, any function that does something other than just return a result, is known as a macro. Functions calculate things. Macros do things.
 
 **Common in-built macros**
 
-- `console.log` for example fits the description of macro, since it is a function that interacts with the machine's / brower's console.
+- `console.log` fits the description of macro, since it is a function that interacts with the machine's / brower's console.
 - `Date.now()` interacts with the machine to get the current timestamp.
 - `Math.random` returns a random number value - which is impure.
 - `setTimeout` / `setInterval` interacts with the event-loop.
@@ -544,9 +504,12 @@ So it's fair to say that macros are everywhere.
 
 **Lean makes the bold claim that every impurity can be wrapped in a 'Pure' Macro.**
 
+There are lots of Javascript / Typescript Libraries out there that are not pure and that require wrapping by Pure Macros.
+This impure code for the most part is isolated in your node_modules folder - but if you have in-house impure libraries - then it is best practice to separate this impure code from the Pure Lean code. Pure Macros interface with / wrap this impure code to allow the main application run in a pure way.
+
 Pure Macros:
-- Only interact with inputs, constants, and other Pure Functions ( and Pure Macros ) to derive a result.
-- When passed the same set of inputs, always return the same result.
+- When passed the same set of inputs, always return the same result (even if that result is undefined) and therefore appear pure to the currently running function / macro.
+- Do not mutate anything in any running functions / macros.
 
 However they also send instructions to the 'outside world' to perform tasks, and get information from the 'outside world'.
 
@@ -593,164 +556,30 @@ now(t => console.log('the time is ' + t))
 Mutables (LIBRARIES COMING SOON)
 ========
 
-A Mutable is a safe store of mutable data.
-
-They use the lean-mutable library (coming soon).
-
-The `mutable` macro wraps a value, turning it into a Mutable and then fires the Mutable into an awaiting pure macro.
-The Mutable is unreachable outside of the scope of the mutable macro.
-
-To update the value of a mutable use `set`, which takes the Mutable ( + an optional pass-in value ), along with a pure function to produce a new state.
-
-Use `unwrap` to access the current state.
+Mutability can also be managed in a completely pure way.
+pureMutable takes a starting value along with a Pure Macro - let's call this the 'Child Macro'
+It spawns a new instance of the Child Macro passing in the initial value as input, as well as a special 'set' macro.
+When 'set' is called, nothing is mutated in any currently running macros, BUT a new Child Macro is spawned passing in the new value as input.
+Actually both the old and new value are passed into the Child Macro should it need to work with the old and new. 
+Due to the potential for infinite looping, there MUST be a time buffer between the Child Macro being run and set being called.
 
 ```typescript
 
-mutable(1)(counter => {
-    set(counter)(v => v + 1) // update to 2
-    set(counter)(v => v + 1) // update to 3
-    unwrap(counter)(v => {   // unwrap
-        console.log(v)       // logs 3
-    })
-                             // goes out of scope - no longer reachable
+pureMutable(1)((_, newValue, set) => {
+    set(newValue + 1) // This will throw an error as `set` cannot be called without some sort of 'time buffer'
+    setTimeout(() => {
+        console.log(newValue)
+        set(newValue + 1) // This is ok because the setTimeout causes a time-buffer.
+    }, 1000)
 })
 
 ```
-
-The `mutable`, `unwrap`, and `set` macros are all 'pure' macros - but not 'pure' functions.
-By definition a macro 'does' something other than return a value, and in the case of set - it's mutating state.
-The 'Mutable' makes working with mutable state safer, since unwrapped state is always passed to an accompanying pure macro, and updates always occur using pure functions.
-
-Mutables can also be subscribed to.
-Subscriptions must have id's which prevent memory leaks associated with id-less subscriptions.
-The id can be used later to tear down a subscription with destroy.
-Subscriptions also have a safeguard whereby a set cannot be called during the emit phase of the set / subscribe - which prevents infinite loops.
-
-```typescript
-
-mutable(1)(counter => {
-    subscribe('s1')(counter)(v => { // s1 is the Id that we are assigning to our subscription.
-        console.log(`value is now ${v}`)
-        set(counter)(v => v + 1) // This will throw an error because setting during the emit phase will otherwise cause infinite loops.
-    })
-    set(counter)(v => v)     // set with current
-    set(counter)(v => v + 1) // update to 2
-    set(counter)(v => v + 1) // update to 3
-                             // goes out of scope - no longer reachable
-})
-
-```
-
-The following shows how to create a well described pure macro for a Mutable to be passed into.
-The pure macro can then be tested easily.
-
-```typescript
-
-type Person = {
-    name: string
-    age: number
-}
-type People = Record<string, Person>
-
-const init: People = {
-    person1: {
-        name: 'Ben',
-        age: 39
-    },
-    person2: {
-        name: 'Sherri',
-        age: 30
-    }
-}
-
-const pureMacro = (people: Mutable<People>) => {
-
-    const op1 = subscribe('people-sub-1')(people)(v => {
-        Object.keys(v).forEach(key => {
-            console.log(`hello ${v[key].name}, you are ${v[key].age}`)
-        })
-    })
-
-    const op2 = set(people)(v => ({...v, person1: { name: v.person1.name, age: v.person1.age + 1 } }))
-
-    return {
-        macro: 'pureMacro',
-        params: [people],
-        subMacros: [
-            op1,
-            op2
-        ]
-    }
-}
-
-```
-
-It's easy to test that the pureMacro is performing correctly by logging it's response.
-Since it's response describes what it is doing, we can ensure that it is behaving as expected.
-To create a stub Mutable for passing into the pureMacro (for testing) - use `mutableStub`.
-
-test...
-
-```typescript
-
-console.log(`test\n`, pureMacro(mutableStub(init)))
-
-```
-
-Run for real...
-
-```typescript
-
-mutable(init)(pureMacro)
-
-```
-
-### A Quick Application Boilerplate with mutable
-
-The beauty of the Pure Macro and `mutable` is that the flow of the application is in one direction.
-A globalMutable is able to be set up for the outer most variables of an application.
-A subscription can be set up to listen to changes in the globalMutable, which re-runs the application ( which is a Pure Macro ).
-Within the Subscription itself, event listeners are able to trigger update the globalMutable when necessary.
-
-Even though the application uses mutable values - it never knows that it is, and can behave in a completely pure way!
-
-```typescript
-
-const globalInit = {
-    view: 'view1'
-}
-
-const main = () =>
-    mutable(globalInit)(globalMutable => {
-        subscribe('global-sub-1')(globalMutable)(globalValues => {
-            // Construct the main application here.
-            // Set up event handlers that then update the globalMutable.
-            // When the globalMutable changes - the main application will re-run with the new globalValues.
-            console.log(globalValues.view)
-        })
-        // To kick off the subscription - update the value of the globalMutable - even if it's with the same value.
-        // v is used as shorthand for the unwrapped value of the Mutable
-        set(globalMutable)(v => v)
-    })
-
-main()
-
-```
-
-The application is able to be split into layers, so that the whole application doesn't have to re-run every time a low-level mutable changes state.
 
 ## Conclusion
 
-I hope we've managed to cover the important concepts of Functional Programming without blowing too many brain-cells.
+- Lean focusses on data.
+- Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
+- Data is piped through functions to create complex data transformations.
+- Pure Functions take in data, and return new data without mutating the input or any other variables
+- Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros spawn new instances of Child Macros and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the otherwise pure function.
 
-Rather than deep-dive into Mathematical theories, Monads, Functors, etc. **Lean** distills the purity and safety that comes with 
-functional programming into a simple and easy-to-apply set of concepts and examples.
-
-Where to from here?
-
-1. Learn how to write immutable operations.
-2. Learn how to use recursive functions.
-3. Learn about pattern matching.
-4. Learn about flow, the alternative to promises.
-5. While an obvious path is to learn more about other flavors of Functional Programming, remember that **Lean** is about simplicity. It is better (opinion of Lean) to write code that is easily digestible by others than introduce difficult to grasp concepts. **Lean** dove-tails into the javascript / typescript paradigm - where as some other concepts seem foreign to the language. With that caution in mind - learn more about FP.
-6. Learn more about functional libraries - including Ramda and Rxjs
