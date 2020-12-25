@@ -71,7 +71,6 @@ console.log(
 
 Pure Functions:
   - Don't mutate anything.
-  - Only interact with inputs, and other 'pure' functions to derive a result.
   - When passed the same set of inputs, always return the same result.
 
 **Pure Macros**
@@ -108,7 +107,6 @@ This therefore enforces data that is immutable.
 
 Pure Functions:
   - Don't mutate anything.
-  - Only interact with inputs, constants, and other 'pure' functions to derive a result.
   - When passed the same set of inputs always return the same result.
   
 **Single argument functions are known as unary functions** 
