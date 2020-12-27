@@ -92,11 +92,9 @@ Actually both the old and new value are passed into the Child Macro should it ne
 ```typescript
 
 pureMutable(1)((_, newValue, set) => {
-    set(newValue + 1) // This will throw an error as `set` cannot be called without some sort of 'time buffer'
     wait(1000)(() => {
         console.log(newValue)
-        // This set will work as a time-buffer is in place
-        set(newValue + 1) // This is ok because the setTimeout causes a time-buffer.
+        set(newValue + 1)
     })
 })
 
@@ -107,6 +105,19 @@ So `PureMutable` abides by the rules of Pure Macros because it appears as a pure
 Note that PureMutable also comes with some safe-guards. 
 1. `set` can only be called if a time buffer is in place between running the `pureMutable` and calling `set`. This prevents inifnite looping.
 2. `set` is only callable once per running instance of the Child Macro. This stops multiple instances running at the same time and forces a safer way of working with data.
+
+```typescript
+
+pureMutable(1)((_, newValue, set) => {
+    set(newValue + 1) // This will cause an error because set cannot be called synchronously
+    wait(1000)(() => {
+        console.log(newValue)
+        set(newValue + 1) // This set is ok because there is a time buffer between the pureMutable and the set.
+        set(newValue + 2) // This set is not ok, because the previous set would have already been triggered.
+    })
+})
+
+```
 
 `PureMutable` is available in the **Lean Prelude**
 
