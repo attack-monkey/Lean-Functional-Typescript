@@ -17,14 +17,12 @@ It works with both javascript and typescript...
 
 We recommend typescript for the type-safety that it gives.
 
-Overview
-========
+Lean Principles
+===============
 
-In Lean, any function that does something other than just return a result, is known as a macro. Functions calculate things. Macros do things.
+1. **Once a variable has been declared - it cannot be changed**
 
-**Lean makes the bold claim that every impurity can be wrapped in a 'Pure' Macro.**
-
-Lean also states that **once a variable has been declared - it cannot be changed**
+2. **Every impurity can be wrapped in a 'Pure' Macro.** (Note: Any function that does something other than just return a result, is known as a macro in Lean. Functions calculate things. Macros do things).
 
 These two guiding principles form the bedrock of Lean Functional Typescript.
 
