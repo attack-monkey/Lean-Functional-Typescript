@@ -221,7 +221,7 @@ const log = logInitialiser(simpleLog)
 
 log('hello world')
 
-// In production, we may swap out simpleLogger for something more sophisticated - but we don't need to change our log statements.
+// In production, we may swap out simpleLog for something more sophisticated - but we don't need to change our log statements.
 
 
 ```
