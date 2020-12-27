@@ -106,6 +106,10 @@ pureMutable(1)((_, newValue, set) => {
 
 So `PureMutable` abides by the rules of Pure Macros because it appears as a pure function to the currently running function / macro. The trick is that it spawns new running instances of the Child Macro, passing new values into it.
 
+Note that PureMutable also comes with some safe-guards. 
+1. `set` can only be called if a time buffer is in place between running the `pureMutable` and calling `set`. This prevents inifnite looping.
+2. `set` is only callable once per running instance of the Child Macro. This stops multiple instances running at the same time and forces a safer way of working with data.
+
 `PureMutable` is available in the **Lean Prelude**
 
 ### Pure Functions
