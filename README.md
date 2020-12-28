@@ -29,19 +29,17 @@ These two guiding principles form the bedrock of Lean Functional Typescript.
 Pure Macros
 ===========
 
-Pure Macros:
-
-- When passed the same set of inputs, always return the same result (even if that result is undefined), and therefore appear pure to the currently running function / macro.
-- Do not mutate anything in any running functions / macros.
+- When passed the same set of inputs, Pure Macros always return the same result (even if that result is undefined), and therefore appear pure to the currently running function / macro.
+- Pure Macros do not mutate anything in any running functions / macros.
 
 In this way `console.log` is a pure macro but `Date.now()` is not.
 `Date.now()` is considered impure as it returns a different value each time it is called.
 
-These types of impure macros can be wrapped in a pure macro - which in turn allows the surrounding macro to be pure.
-The now-macro below, takes a pure macro as an argument.
-When the outer macro fires, the inner pure macro is called with the result of the outer macro.
+These types of impure macros can be wrapped in a pure macro.
+The `now` macro below, takes a pure macro as an argument.
+This is known as a Child Macro, for when the parent macro is called, an instance of the Child Macro is spawned, passing in the result of the parent macro.
 
-Eg. The now function as a pure alternative to Date.now
+Eg. The now macro as a pure alternative to Date.now
 
 ```typescript
 
@@ -51,15 +49,17 @@ const now = <A>(f: (n: number) => A) => {
 
 ```
 
-When `now` gets called it passes the result into the pure macro `t => console.log('the time is ' + t)`
-This inner macro is pure as it always returns undefined
-If we were to log `now(t => console.log('the time is ' + t))`, we would see that the return value is also undefined`.
+Calling `now` looks like...
 
 ```typescript
 
 now(t => console.log('the time is ' + t)) // the time is *whatever the current timestamp is*
 
 ```
+
+When `now` gets called it passes the result into the pure macro `t => console.log('the time is ' + t)`
+This Child Macro is pure as it always returns undefined
+If we were to log `now(t => console.log('the time is ' + t))`, we would see that the return value is also undefined`.
 
 Immutable Operations
 ====================
