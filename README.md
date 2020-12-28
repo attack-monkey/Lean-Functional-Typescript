@@ -80,7 +80,7 @@ console.log(b) // hello world
 
 ```
 
-Mutables (LIBRARIES COMING SOON)
+Mutables
 ========
 
 Mutability can however be managed in a completely pure way - by abiding by the rules of Pure Macros.
@@ -123,7 +123,8 @@ pureMutable(1)((_, newValue, set) => {
 
 Working with PureMutable can take some time to get used to. It's best to use it in terms of scope. A global scope `pureMutable` can exist outside of the main app function. Then layers of lower level scoped `pureMutable`'s can be used in smaller components.
 
-### Pure Functions
+Pure Functions
+==============
 
 Pure Functions are the building blocks of any functional programming. Pure Functions take in input and return output - without mutating anything.
 
