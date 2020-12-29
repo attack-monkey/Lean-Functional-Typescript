@@ -85,10 +85,12 @@ It spawns a new instance of the Handler passing in the initial value as input, a
 When `set` is called, nothing is mutated in any currently running macros, BUT a new Handler Macro is spawned, passing in the new value as input.
 Actually both the old and new value are passed into the Handler should it need to work with the old and new.
 
+_We'll get to the `pureSetTimeout` in a moment..._
+
 ```typescript
 
 pureMutable(1)((_, newValue, set) => {
-    wait(1000)(() => {
+    pureSetTimeout(1000)(() => {
         console.log(newValue)
         set(newValue + 1)
     })
@@ -106,7 +108,7 @@ Note that PureMutable also comes with some safe-guards.
 
 pureMutable(1)((_, newValue, set) => {
     set(newValue + 1) // This will cause an error because set cannot be called synchronously
-    wait(1000)(() => {
+    pureSetTimeout(1000)(() => {
         console.log(newValue)
         set(newValue + 1) // This set is ok because there is a time buffer between the pureMutable and the set.
         set(newValue + 2) // This set is not ok, because the previous set would have already been triggered.
@@ -115,16 +117,22 @@ pureMutable(1)((_, newValue, set) => {
 
 ```
 
-An example of using a Pure `setTimeout` with `pureMutable`...
+The `pureSetTimeout` above is a pure version of `setTimeout` and is defined as 
 
 ```typescript
 
 // A Pure Wrapper around setTimeout
 const pureSetTimeout =
-    (interval: number) =>
+    (timeout: number) =>
         <A>(f: () => A) => {
-            setTimeout(f, interval)
+            setTimeout(f, timeout)
         }
+ 
+ ```
+
+Another example of using `pureSetTimeout` with `pureMutable`...
+
+```typescript
 
 // if value is < 10, first beep and then set a new value of n + 1
 const handler =
