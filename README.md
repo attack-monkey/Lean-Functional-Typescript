@@ -115,6 +115,44 @@ pureMutable(1)((_, newValue, set) => {
 
 ```
 
+An example of using a Pure `setTimeout` with `pureMutable`...
+
+```typescript
+
+// A Pure Wrapper around setTimeout
+const pureSetTimeout =
+    (interval: number) =>
+        <A>(f: () => A) => {
+            setTimeout(f, interval)
+        }
+
+// if value is < 10, first beep and then set a new value of n + 1
+const handler =
+    (value: number) =>
+        (set: (a: number) => void) =>
+            () => {
+                if (value < 10) {
+                    console.log(`beep ${value}`)
+                    set(value + 1)
+                }
+            }
+
+// Set up a PureMutable that holds a number
+pureMutable(1)(
+    (_, newValue, set) =>
+        // On first run, and then whenever the value changes - call the PureSetTimeout function
+        pureSetTimeout
+            (1000)  // The PureSetTimeout will wait 1 second before calling the handler
+            (
+                handler // The handler takes a value and a set function 
+                    (newValue)
+                    (set)
+            )
+)
+
+```
+
+
 Working with PureMutable can take some time to get used to. It's best to think of it as a way to hold multiple variables at a particular scope. A global scope `pureMutable` can exist outside of the main app function. When the global scope changes - it spawns a new instance of the main app function.
 
 Layers of lower level scoped `pureMutable`'s can then be used in smaller components.
