@@ -24,7 +24,7 @@ Lean Principles
 
 2. **Every impurity can be wrapped in a 'Pure' Macro.** (Note: Any function that does something other than just return a result, is known as a macro in Lean. Functions calculate things. Macros do things).
 
-These two guiding principles form the bedrock of Lean Functional Typescript.
+These two guiding principles form the basis of Lean Functional Typescript.
 
 Pure Macros
 ===========
@@ -35,11 +35,9 @@ Pure Macros
 In this way `console.log` is a pure macro but `Date.now()` is not.
 `Date.now()` is considered impure as it returns a different value each time it is called.
 
-These types of impure macros can be wrapped in a pure macro.
-The `now` macro below, takes a pure macro as an argument.
-This is known as a Child Macro, for when the parent macro is called, an instance of the Child Macro is spawned, passing in the result of the parent macro.
+Rather than return impure values, Pure Macros take a 'Handler' as an argument. The Handler is itself a PureMacro, designed to accept the impure result as it's argument.
 
-Eg. The now macro as a pure alternative to Date.now
+The `now` macro below, is an example of how a Pure Macro can be written to wrap around it's impure variant.
 
 ```typescript
 
@@ -47,19 +45,17 @@ const now = <A>(f: (n: number) => A) => {
     f(Date.now())
 }
 
-```
+const handler = (t: number) => console.log('the time is ' + t)
 
-Calling `now` looks like...
-
-```typescript
-
-now(t => console.log('the time is ' + t)) // the time is *whatever the current timestamp is*
+now(handler)
 
 ```
 
-When `now` gets called it passes the result into the pure macro `t => console.log('the time is ' + t)`
-This Child Macro is pure as it always returns undefined
-If we were to log `now(t => console.log('the time is ' + t))`, we would see that the return value is also undefined`.
+When `now` gets called it passes the result into the `handler`. 
+The `handler` is pure as it always returns the same thing - undefined. 
+If we were to log `now(handler)`, we would see that the return value is also undefined, and therefore pure.
+
+The trick is that rather than leak impurity into any currently running function / macro, Pure Macros spawn an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
 
 Immutable Operations
 ====================
@@ -84,10 +80,10 @@ Mutables
 ========
 
 Mutability can however be managed in a completely pure way - by abiding by the rules of Pure Macros.
-`pureMutable` takes a starting value along with a Pure Macro - let's call this the 'Child Macro'
-It spawns a new instance of the Child Macro passing in the initial value as input, as well as a special `set` macro.
-When `set` is called, nothing is mutated in any currently running macros, BUT a new Child Macro is spawned, passing in the new value as input.
-Actually both the old and new value are passed into the Child Macro should it need to work with the old and new.
+`pureMutable` *available from Lean Prelude* takes a starting value along with a 'Handler'.
+It spawns a new instance of the Handler passing in the initial value as input, as well as a special `set` macro.
+When `set` is called, nothing is mutated in any currently running macros, BUT a new Handler Macro is spawned, passing in the new value as input.
+Actually both the old and new value are passed into the Handler should it need to work with the old and new.
 
 ```typescript
 
@@ -104,7 +100,7 @@ So `PureMutable` abides by the rules of Pure Macros because it appears as a pure
 
 Note that PureMutable also comes with some safe-guards. 
 1. `set` can only be called if a time buffer is in place between running the `pureMutable` and calling `set`. This prevents inifnite looping.
-2. `set` is only callable once per running instance of the Child Macro. This stops multiple instances running at the same time and forces a safer way of working with data.
+2. `set` is only callable once per running instance of the Handler. This stops multiple instances running at the same time and forces a safer way of working with data.
 
 ```typescript
 
@@ -119,9 +115,9 @@ pureMutable(1)((_, newValue, set) => {
 
 ```
 
-`PureMutable` is available in the **Lean Prelude**
+Working with PureMutable can take some time to get used to. It's best to think of it as a way to hold multiple variables at a particular scope. A global scope `pureMutable` can exist outside of the main app function. When the global scope changes - it spawns a new instance of the main app function.
 
-Working with PureMutable can take some time to get used to. It's best to use it in terms of scope. A global scope `pureMutable` can exist outside of the main app function. Then layers of lower level scoped `pureMutable`'s can be used in smaller components.
+Layers of lower level scoped `pureMutable`'s can then be used in smaller components.
 
 Pure Functions
 ==============
