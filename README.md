@@ -26,7 +26,7 @@ Lean Principles
 
 3. **Values / Data should not be polluted with methods. Instead functions and Macros accept Values of a particular 'Call Signature'.
 
-These two guiding principles form the basis of Lean Functional Typescript.
+These three guiding principles form the basis of Lean Functional Typescript.
 
 Pure Macros
 ===========
