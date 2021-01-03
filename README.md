@@ -24,9 +24,7 @@ Lean Principles
 
 2. **Once a variable has been declared - it cannot be changed**
 
-3. **Values / Data should not be polluted with methods. Instead functions and Macros accept Values of a particular 'Call Signature'**.
-
-These three guiding principles form the basis of Lean Functional Typescript.
+These two guiding principles form the basis of Lean Functional Typescript.
 
 Pure Macros
 ===========
