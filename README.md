@@ -7,7 +7,7 @@ It achieves purity through the concept of Pure Functions and Pure Macros.
 Install
 =======
 
-While Lean is more conceptual than anything else, the Lean Prelude provides utilities such as **pattern matching**.
+While Lean is more conceptual than anything else, the Lean Prelude provides utilities such as **pattern matching**, **piping**, and **flows**.
 
 To get going with Lean, download the **prelude**
 
@@ -394,9 +394,9 @@ const myNewList = myList
 
 ```
 
-> Note: In essence this is what the `pipe` function itself does, however Lean uses `pipe` as a utility filling the gap of not having a pipeline operator.
+> Note: In essence this is what the `pipe` function itself does, however Lean uses `pipe` as a utility for moving data from one function to the next, rather than transforming data. Therefore the number of methods on `pipe` is minimal, and doesn't suffer from the need to extend the class, etc. The same goes for native Promise syntax, and even Rxjs.
 
-So while 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript... it is not 'Lean'. It means that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
+So while 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript... it is not preferred in Lean. In the above it would mean that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
 
 If however `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
