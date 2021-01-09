@@ -204,14 +204,8 @@ loop()
 ```
 ^^ This is perhaps the most important application pattern as it drives one-directional application workflow and allows an application to be broken into layers
 
-**tldr on the above**
-
 Calling a mutation OR unwrap macro while an existing mutation OR unwrap macro is playing will cause the new macro to 
 queue in the process-queue until the current macro (and subsequent queued macros) have played out.
-In the above `mutateValue` is called while `unwrapValue` is still playing, so the mutation macro goes on to the queue.
-`loop` then calls `unwrapValue` while the existing `unwrapValue` is still playing, so the new `unwrapValue` macro goes on to the queue.
-Once the current macro finishes, the `mutateValue` plays out (mutating the value)
-Then the new `unwrapValue` is played with the now updated value.
 
 Pure Functions
 ==============
