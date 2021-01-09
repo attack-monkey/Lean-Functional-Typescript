@@ -57,13 +57,6 @@ If we were to log `now(handler)`, we would see that the return value is also und
 
 The trick is that rather than leak impurity into any currently running function / macro, Pure Macros spawn an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
 
-Wrapping Impurities
-===================
-
-Pure Macros that wrap Impure Macros can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
-Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
-The only impurities that should be wrapped are either native impurities or third-party impurities.
-
 ### Promises
 
 Promises already conform to the notion of Pure Macro, and infact by wrapping `Date.now()` in `Promise.resolve` we end up with a very similar result to above...
@@ -71,6 +64,23 @@ Promises already conform to the notion of Pure Macro, and infact by wrapping `Da
 ```typescript
 
 Promise.resolve(Date.now()).then(handler)
+
+```
+
+Wrapping Impurities
+===================
+
+Pure Macros that wrap Impure Macros can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
+Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
+The only impurities that should be wrapped are either native impurities or third-party impurities.
+
+A Note on partial functions...
+
+Partial Functions occur when a function returns a function that then uses both the outer and inner scope to form a result. Technically the returned function is using scope outside of it's direct inputs to calculate a result and could be considered impure. However, since there is no way of calling the inner function other than by calling the outer function, everything is considered safe and pure.
+
+```typescript
+
+const fn1 = (a: number) => (b: number) => a + b  
 
 ```
 
