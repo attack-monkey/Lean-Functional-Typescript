@@ -20,7 +20,7 @@ We recommend typescript for the type-safety that it gives.
 Lean Principles
 ===============
 
-1. **Every impurity can be wrapped in a 'Pure' Macro.** (Note: Any function that does something other than just return a result, is known as a macro in Lean. Functions calculate things. Macros do things).
+1. **Every impurity can be wrapped in a 'Pure' Macro' / 'Pure Function'.** (Note: Any function that does something other than just return a result, is known as a macro in Lean. Functions calculate things. Macros do things).
 
 2. **Once a variable has been declared - it cannot be changed**
 
@@ -56,6 +56,13 @@ The `handler` is pure as it always returns the same thing - undefined.
 If we were to log `now(handler)`, we would see that the return value is also undefined, and therefore pure.
 
 The trick is that rather than leak impurity into any currently running function / macro, Pure Macros spawn an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
+
+Wrapping Impurities
+===================
+
+Pure Macros that wrap Impure Macros can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
+Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
+The only impurities that should be wrapped are either native impurities or third-party impurities.
 
 ### Promises
 
@@ -105,105 +112,96 @@ Mutables
 ========
 
 Mutability can however be managed in a completely pure way - by abiding by the rules of Pure Macros.
-`pureMutable` *available from Lean Prelude* takes a starting value along with a 'Handler'.
-It spawns a new instance of the Handler passing in the initial value as input, as well as a special `fset` (functional set) macro.
-When `fset` is called, nothing is mutated in any currently running macros, BUT a new Handler Macro is spawned, passing in the new value (`currentValue`) as input.
-Actually both the old and new value are passed into the Handler should it need to work with the old and new.
-Both `PureMutable` and `fset` appear pure to the functions / macros calling it.
 
-_We'll get to the `pureSetTimeout` in a moment..._
+`mutable` returns a tuple containing unwrap and mutate functions.
+
+Calling the mutate function calls the handler passing in the current value. The return value of the handler becomes the new value, however nothing in any currently running macro is mutated.
+
+When the upwrap function is called it's handler is called, passing in the now updated value.
 
 ```typescript
 
-pureMutable(1)(({ currentValue, fset }) => {
-    pureSetTimeout(1000)(() => {
-        console.log(currentValue)
-        fset(currentValue + 1)
-    })
+const [unwrapCat, mutateCat] = mutable('garfield')
+
+mutateCat(_ => 'felix')
+
+mutateCat(cv => cv + '!')
+
+unwrapCat(console.log) // felix!
+
+```
+
+Calling `mutateCat` does not mutate any value in any currently running macro, and can therefore be considered a Pure Macro.
+
+** Using a Mutable Tuple to organise parallel operations **
+
+```typescript
+
+type TempTuple = [string | undefined, string | undefined, string | undefined]
+const [unwrapTuple, mutateTuple] = mutable([ undefined, undefined, undefined ] as TempTuple)
+
+const runIfComplete = (tup: TempTuple) => {
+    if (tup.every(item => !!item)) {
+        console.log(tup)
+    }
+}
+
+mutateTuple(tup => ['purple', tup[1], tup[2]])
+unwrapTuple(runIfComplete)
+mutateTuple(tup => [tup[0], 'monkey', tup[2]])
+unwrapTuple(runIfComplete)
+mutateTuple(tup => [tup[0], tup[1], 'dishwasher'])
+unwrapTuple(runIfComplete) // ["purple", "monkey", "dishwasher"]
+
+```
+
+**An incremental id generator using mutables**
+
+```typescript
+
+type NewIdGen = () => (f: (cv: number) => void) => void
+
+const newIdGen: NewIdGen = () => {
+    const [unwrapId, mutateId] = mutable(0)
+    return f => {
+        mutateId(id => id + 1)
+        unwrapId(id => f(id))
+    }
+}
+
+const id1 = newIdGen()
+id1(id => console.log(id)) // 1
+id1(id => console.log(id)) // 2
+
+```
+
+**Creating a loop where by a mutation event is followed by recalling the unwrap event until a condition is met.**
+
+```typescript
+
+const [unwrapValue, mutateValue] = mutable(10)
+
+const loop = () => unwrapValue(a => {
+    console.log(`val before: ${a}`)
+    // This mutation event does not mutate the current macro - so logging before and after this line will yield the same value.
+    mutateValue(a => a + 1)
+    if (a < 12) loop()
+    console.log(`val after: ${a}`)
 })
 
-```
-
-Note that PureMutable also comes with some safe-guards. 
-1. `fset` can only be called if a time buffer is in place between running the `pureMutable` and calling `fset`. This prevents inifnite looping, and also prevents mutation within the Handler Macro.
-2. `fset` is only callable once per running instance of the Handler. This stops multiple instances running at the same time and forces a safer way of working with data.
-
-```typescript
-
-pureMutable(1)(({ currentValue, fset }) => {
-    fset(currentValue + 1) // This will cause an error because fset cannot be called synchronously
-    pureSetTimeout(1000)(() => {
-        console.log(currentValue)
-        fset(currentValue + 1) // This fset is ok because there is a time buffer between the pureMutable and the fset.
-        fset(currentValue + 2) // This fset is not ok, because the previous fset would have already been triggered.
-    })
-})
+loop()
 
 ```
+^^ This is perhaps the most important application pattern as it drives one-directional application workflow and allows an application to be broken into layers
 
-The `pureSetTimeout` above is a pure version of `setTimeout` and is defined as 
+**tldr on the above**
 
-```typescript
-
-// A Pure Wrapper around setTimeout
-const pureSetTimeout =
-    (timeout: number) =>
-        <A>(f: () => A) => {
-            setTimeout(f, timeout)
-        }
- 
- ```
-
-Another example of using `pureSetTimeout` with `pureMutable`...
-
-```typescript
-
-// if value is < 10, first beep and then set a new value of n + 1
-const handler =
-    (value: number) =>
-        (fset: (a: number) => void) =>
-            () => {
-                if (value < 10) {
-                    console.log(`beep ${value}`)
-                    fset(value + 1)
-                }
-            }
-
-// Set up a PureMutable that holds a number
-pureMutable(1)(
-    ({ currentValue, fset }) =>
-        // On first run, and then whenever the value changes - call the PureSetTimeout function
-        pureSetTimeout
-            (1000)  // The PureSetTimeout will wait 1 second before calling the handler
-            (
-                handler // The handler takes a value and a fset function 
-                    (currentValue)
-                    (fset)
-            )
-)
-
-```
-
-
-Working with PureMutable can take some time to get used to. It's best to think of it as a way to hold multiple variables at a particular scope. A global scope `pureMutable` can exist outside of the main app function. When the global scope changes - it spawns a new instance of the main app function.
-
-Layers of lower level scoped `pureMutable`'s can then be used in smaller components.
-
-### Other useful PureMutable helpers
-
-The `PureMutable` Handler accepts an object with the following keys that we have already seen:
-
-- currentValue
-- fset
-
-But also:
-
-- previousValue
-- fsetThenIgnore
-
-`previousValue` is pretty self explanitory and as expected returns the previous value (before the fset).
-
-`fsetThenIgnore` is similar to `fset` however it will not throw an error in the event that multiple `fset` calls occur from the same macro. It still only allows the first operation to occur - but silently rejects any thereafter. This is useful when race conditions are tolerated.
+Calling a mutation OR unwrap macro while an existing mutation OR unwrap macro is playing will cause the new macro to 
+queue in the process-queue until the current macro (and subsequent queued macros) have played out.
+In the above `mutateValue` is called while `unwrapValue` is still playing, so the mutation macro goes on to the queue.
+`loop` then calls `unwrapValue` while the existing `unwrapValue` is still playing, so the new `unwrapValue` macro goes on to the queue.
+Once the current macro finishes, the `mutateValue` plays out (mutating the value)
+Then the new `unwrapValue` is played with the now updated value.
 
 Pure Functions
 ==============
@@ -211,6 +209,8 @@ Pure Functions
 Pure Functions are the building blocks of any functional programming. Pure Functions take in input and return output - without mutating anything.
 
 This therefore enforces data that is immutable.
+
+Like Pure Macros, whenever they are passed the same set of inputs - they always return the same output.
   
 **Single argument functions are known as unary functions**
 
@@ -550,7 +550,7 @@ Javascript and Typescript also provide async / await for handling asynchronicity
 ```typescript
 
 const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
-const b = a.json() // This introduces an impurure value into the code.
+const b = a.json() // This introduces an impure value to b, since we can't be sure what it is.
 handler(b) // handler can still be pure - but this function / macro has been polluted.
 
 ```
@@ -676,7 +676,7 @@ const $matchPattern = {
 }
 
 match(a)
-  with_($matchedPattern, ({ name: { first: b }}) => `${b} is a string`)
+  .with_($matchedPattern, ({ name: { first: b }}) => `${b} is a string`)
 
 
 ```
