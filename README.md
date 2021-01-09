@@ -72,7 +72,7 @@ Wrapping Impurities
 
 Pure Macros that wrap Impure Macros can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
 Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
-The only impurities that should be wrapped are either native impurities or third-party impurities.
+The only impurities that should be wrapped are native impurities and third-party impurities.
 
 A Note on partial functions...
 
