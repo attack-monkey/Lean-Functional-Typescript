@@ -143,7 +143,7 @@ unwrapCat(console.log) // felix!
 
 Calling `mutateCat` does not mutate any value in any currently running macro, and can therefore be considered a Pure Macro.
 
-** Using a Mutable Tuple to organise parallel operations **
+**Using a Mutable Tuple to organise parallel operations**
 
 ```typescript
 
