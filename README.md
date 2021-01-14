@@ -29,6 +29,8 @@ These two guiding principles form the basis of Lean Functional Typescript.
 Pure Macros
 ===========
 
+- A Macro is a function that 'does' something other than just return a result. 
+- All Macros in Lean are either pure OR they are a native or third-party impurity, that is wrapped by a Pure Macro.
 - When passed the same set of inputs, Pure Macros always return the same result (even if that result is undefined), and therefore appear pure to the currently running function / macro.
 - Pure Macros do not mutate **anything** in any running functions / macros.
 
@@ -55,7 +57,7 @@ When `now` gets called it passes the result into the `handler`.
 The `handler` is pure as it always returns the same thing - undefined. 
 If we were to log `now(handler)`, we would see that the return value is also undefined, and therefore pure.
 
-The trick is that rather than leak impurity into any currently running function / macro, Pure Macros spawn an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
+The trick is that rather than leak impurity into any currently running function / macro, Pure Macros call an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
 
 ### Promises
 
@@ -323,15 +325,26 @@ const a = myFunction(10, 10) // 20
 
 ```
 
-**When dealing with many optional parameters it is also common to use objects and destructure patterns, as is seen with pureMutable**
+**When dealing with many optional parameters it is also common to use objects and destructure patterns**
 
-```typescript
-
-pureMutable(1)(
-    ({ currentValue, fset }) => { ... }
-)
-
-```
+const showCat = (options: { isFluffy: boolean, likesToScratch: boolean, likesIceCream: boolean }) =>
+    console.log(
+        `This kitty ${
+            isFluffy
+                ? 'is fluffy, and' 
+                : ''
+            } ${
+                likesToScratch
+                    ? ' likes to scratch, and' 
+                    : ''
+            } ${
+                likesIceCream
+                    ? ' likes ice-cream'
+                    : ' that\'s all'
+            }`
+    )
+    
+showCat({ isFluffy: true }) // This kitty is fluffy, and that's all
 
 **Pure Functions can also be recursive and should be used in place of loops - because loops mutate values.**
 
@@ -385,7 +398,7 @@ Method chaining works by calling a method on an object, which produces a result.
 
 ## Chaining vs Piping
 
-It is common to see functional libraries provide classes that 'lift' values to provide methods that then work on the value or collection of values inside.
+It is common to see functional libraries provide classes that 'lift' values to provide methods that then work on the value or collection of values inside...
 
 ```typescript
 
@@ -398,9 +411,9 @@ const myNewList = myList
 
 ```
 
-> Note: In essence this is what the `pipe` function itself does, however Lean uses `pipe` as a utility for moving data from one function to the next, rather than transforming data. Therefore the number of methods on `pipe` is minimal, and doesn't suffer from the need to extend the class, etc. The same goes for native Promise syntax, and even Rxjs.
-
 So while 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript... it is not preferred in Lean. In the above it would mean that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
+
+> Note: In essence this is what the `pipe` function itself does, however Lean uses `pipe` as a utility for moving data from one function to the next, rather than transforming data. Therefore the number of methods on `pipe` is minimal, and doesn't suffer from the need to extend the class, etc. The same goes for native Promise syntax, and even Rxjs.
 
 If however `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
