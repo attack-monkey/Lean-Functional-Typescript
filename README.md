@@ -867,5 +867,6 @@ fetchPerson(123).then(
 - Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
 - Data is piped through functions to create complex data transformations.
 - Pure Functions take in data, and return new data without mutating the input or any other variables
-- Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros spawn new instances of Child Macros and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the otherwise pure function.
+- Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros spawn new instances of Child Macros and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
+- By combining Pure Macros and Pattern Matching, Type Certainty can be achieved making code extremely predictable and safe.
 
