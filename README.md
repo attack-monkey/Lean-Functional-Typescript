@@ -259,8 +259,6 @@ const c = increment(increment(a)) // c is 3
 
 ```
 
-### Pipes
-
 **Pipes allow you to do the above in a much cleaner way**
 
 In FP languages such as F# you can write the above as:
