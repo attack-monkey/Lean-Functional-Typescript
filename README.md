@@ -26,12 +26,34 @@ Lean Principles
 
 These two guiding principles form the basis of Lean Functional Typescript.
 
+A note on `undefined`, `void`, and `null`
+================================
+
+In functional languages, a pure function must return a value - even if it's an empty value - usually referred to as `unit`.
+
+In javascript, typescript, and Lean, a function is allowed to return `undefined`, `null`, and `void`.
+Note that in typescript, when a function doesn't return a value at all (`void`), this automatically equates to `undefined`.
+
+Eg.
+
+```typescript
+
+type MyFn = () => void
+
+const myFn: MyFn = () => {}
+
+console.log(myFn()) // undefined
+
+```
+
+In Lean a function can still return `undefined`, `void`, `null`, and still be regarded as pure!
+
 Pure Macros
 ===========
 
 - A Macro is a function that 'does' something other than just return a result. 
 - All Macros in Lean are either pure OR they are a native or third-party impurity, that is wrapped by a Pure Macro.
-- When passed the same set of inputs, Pure Macros always return the same result (even if that result is undefined), and therefore appear pure to the currently running function / macro.
+- When passed the same set of inputs, Pure Macros always return the same result (even if that result is undefined), and therefore appear as pure functions to the currently running function / macro.
 - Pure Macros do not mutate **anything** in any running functions / macros.
 
 In this way `console.log` is a pure macro but `Date.now()` is not.
@@ -55,7 +77,7 @@ now(handler)
 
 When `now` gets called it passes the result into the `handler`. 
 The `handler` is pure as it always returns the same thing - undefined. 
-If we were to log `now(handler)`, we would see that the return value is also undefined, and therefore pure.
+If we were to log `now(handler)`, we would see that the return value is also always `undefined`, and therefore pure.
 
 The trick is that rather than leak impurity into any currently running function / macro, Pure Macros call an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
 
@@ -78,7 +100,7 @@ The only impurities that should be wrapped are native impurities and third-party
 
 A Note on partial functions...
 
-Partial Functions occur when a function returns a function that then uses both the outer and inner scope to form a result. Technically the returned function is using scope outside of it's direct inputs to calculate a result and could be considered impure. However, since there is no way of calling the inner function other than by calling the outer function, everything is considered safe and pure.
+Partial Functions occur when a function returns a function that then uses both the outer and inner scope to form a result. Technically the returned function is using scope outside of it's direct inputs to calculate a result and could be considered impure. However, since there is no way of calling the inner function other than by calling the outer function, everything is considered safe and pure. Partial functions are also referred to as curried functions, and are a common part of functional programming in general.
 
 ```typescript
 
@@ -204,7 +226,6 @@ const loop = () => unwrapValue(a => {
 loop()
 
 ```
-^^ This is perhaps the most important application pattern as it drives one-directional application workflow and allows an application to be broken into layers
 
 Calling a mutation OR unwrap macro while an existing mutation OR unwrap macro is playing will cause the new macro to 
 queue in the process-queue until the current macro (and subsequent queued macros) have played out.
@@ -417,9 +438,9 @@ const myNewList = myList
 
 So while 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript... it is not preferred in Lean. In the above it would mean that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
 
-> Note: In essence this is what the `pipe` function itself does, however Lean uses `pipe` as a utility for moving data from one function to the next, rather than transforming data. Therefore the number of methods on `pipe` is minimal, and doesn't suffer from the need to extend the class, etc. The same goes for native Promise syntax, and even Rxjs.
+> Note: In essence, the `pipe` function is a wrapper around a `Pipe` class that lifts a value into a 'pipeable context'. That is, it binds the `pipe` and `done` methods to `this`. However Lean uses `pipe` as a utility for moving data from one function to the next, rather than transforming data. Therefore the number of methods on `pipe` is minimal, and doesn't suffer from the need to extend the class, etc. The same goes for native Promise syntax, and even Rxjs.
 
-If however `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
+So, in the above, if `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
 ```typescript
 
