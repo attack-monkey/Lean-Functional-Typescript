@@ -348,9 +348,11 @@ const showCat = (options: { isFluffy: boolean, likesToScratch: boolean, likesIce
     
 showCat({ isFluffy: true }) // This kitty is fluffy, and that's all
 
+```
+
 **Pure Functions can also be recursive and should be used in place of loops - because loops mutate values.**
 
-```
+
 
 An example of a recursive function
 
