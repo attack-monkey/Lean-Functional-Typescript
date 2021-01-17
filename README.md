@@ -327,6 +327,8 @@ const a = myFunction(10, 10) // 20
 
 **When dealing with many optional parameters it is also common to use objects and destructure patterns**
 
+```typescript
+
 const showCat = (options: { isFluffy: boolean, likesToScratch: boolean, likesIceCream: boolean }) =>
     console.log(
         `This kitty ${
