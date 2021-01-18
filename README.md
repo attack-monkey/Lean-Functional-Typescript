@@ -52,7 +52,7 @@ Pure Macros
 ===========
 
 - A Macro is a function that 'does' something other than just return a result. 
-- All Macros in Lean are either pure OR they are a native or third-party impurity, that is wrapped by a Pure Macro.
+- All Macros in Lean are either pure OR native / third-party impurities, that are wrapped by a Pure Macros.
 - When passed the same set of inputs, Pure Macros always return the same result (even if that result is undefined), and therefore appear as pure functions to the currently running function / macro.
 - Pure Macros do not mutate **anything** in any running functions / macros.
 
