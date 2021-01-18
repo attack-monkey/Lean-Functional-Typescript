@@ -29,10 +29,10 @@ These two guiding principles form the basis of Lean Functional Typescript.
 A note on `undefined`, `void`, and `null`
 ================================
 
-In functional languages, a pure function must return a value - even if it's an empty value - usually referred to as `unit`.
+In functional languages, a pure function must return a value - even if it's an empty value - usually referred to as unit.
 
 In javascript, typescript, and Lean, a function is allowed to return `undefined`, `null`, and `void`.
-Note that in typescript, when a function doesn't return a value at all (`void`), this automatically equates to `undefined`.
+Note that in typescript, when a function doesn't return a value at all (`void`), this implicitly returns `undefined`.
 
 Eg.
 
@@ -66,14 +66,13 @@ The `now` macro below, is an example of how a Pure Macro can be written to wrap 
 
 ```typescript
 
-const now = <A>(f: (n: number) => A) => {
-    f(Date.now())
-}
+type Now = <A>(handler: (n: number) => A) => A
+
+const now: Now = handler => handler(Date.now())
 
 const handler = (t: number) => console.log('the time is ' + t)
 
 now(handler)
-
 ```
 
 When `now` gets called it passes the result into the `handler`. 
@@ -148,11 +147,11 @@ Mutables
 
 Mutability can however be managed in a completely pure way - by abiding by the rules of Pure Macros.
 
-`mutable` returns a tuple containing unwrap and mutate functions.
+`mutable` returns a tuple containing unwrap and mutate macros.
 
-Calling the mutate function calls the handler passing in the current value. The return value of the handler becomes the new value, however nothing in any currently running macro is mutated.
+Calling the mutate macro calls the handler passing in the current value. The return value of the handler becomes the new value, however nothing in any currently running macro is mutated.
 
-When the upwrap function is called it's handler is called, passing in the now updated value.
+When the upwrap macro is called it's handler is called, passing in the now updated value.
 
 ```typescript
 
@@ -228,8 +227,10 @@ loop()
 
 ```
 
-Calling a mutation OR unwrap macro while an existing mutation OR unwrap macro is playing will cause the new macro to 
-queue in the process-queue until the current macro (and subsequent queued macros) have played out.
+When the unwrap macro is called, the handler represents the 'unwrapped context' where the value can be accessed.
+While in the unwrapped context, calling a mutation OR unwrap macro will cause the new macro to 
+queue in the process-queue until the unwrapped context (and subsequent queued macros) have played out.
+This ensures that the value in the unwrapped context does not mutate, and therefore everything remains pure.
 
 Pure Functions
 ==============
@@ -891,6 +892,6 @@ fetchPerson(123).then(
 - Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
 - Data is piped through functions to create complex data transformations.
 - Pure Functions take in data, and return new data without mutating the input or any other variables
-- Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros spawn new instances of Child Macros and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
+- Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros call new instances of Child Macros (AKA Handlers) and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
 - By combining Pure Macros and Pattern Matching, Type Certainty can be achieved making code extremely predictable and safe.
 
