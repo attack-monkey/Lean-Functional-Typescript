@@ -145,8 +145,8 @@ Eg.
 
 ```typescript
 
-const a = { greeting: 'hello ', thing: '' }
-const b = { ...a, thing: 'world' }
+const a = 'hello'
+const b = a + ' world'
 
 console.log(a) // hello (i.e. no mutation)
 console.log(b) // hello world
@@ -157,13 +157,13 @@ or pipe the result of one function into the next function...
 
 ```typescript
 
-const changeThing = 
-    <A>(newThing: A) => 
-        (obj: { thing: A }) =>
-            ({ ...obj, thing: newThing })
-
-pipe({ greeting: 'hello ', thing: '' })
-    .pipe(changeThing)
+const appendString = 
+    (str: string) =>
+        (originalStr: string) =>
+            originalStr + str
+        
+pipe('hello')
+    .pipe(appendString(' world'))
     .pipe(console.log)
 
 ```
