@@ -99,12 +99,38 @@ Writing Pure Macros to wrap your own Impure code - should be avoided, and instea
 The only impurities that should be wrapped are native impurities and third-party impurities.
 
 A Note on partial functions...
+==============================
 
 Partial Functions occur when a function returns a function that then uses both the outer and inner scope to form a result. Technically the returned function is using scope outside of it's direct inputs to calculate a result and could be considered impure. However, since there is no way of calling the inner function other than by calling the outer function, everything is considered safe and pure. Partial functions are also referred to as curried functions, and are a common part of functional programming in general.
 
 ```typescript
 
 const fn1 = (a: number) => (b: number) => a + b  
+
+```
+
+### Taking Partials Further;
+
+Values in an outer scope can be used safely - so long as all macros obey the rule of not mutating the state of any running macro.
+With that rule being followed, then functions and macros that use values from an outer-scope will still return the same value when passed a given set of inputs - at least in the macro / context they are running in (Since values (including outer-scope values) cannot change during the running of any macro).
+
+This is effectively an extension on the concept of Partial Functions.
+
+These types of functions / macros cannot be called from outside of the function / macro they are scoped to.
+These types of functions / macros MUST all eventually roll up to a Pure Function / Macro otherwise the application fails to be Pure.
+
+```typescript
+
+const myPureMacro = (): void => {
+    now(n1 => {
+        const handler =
+            (n2: number) => n1 + n2 // Since n1 will be the same throughout the running of this macro, `handler` will always produce a predictable result - but only in the context of the currently running macro.
+                                    // Since `handler` cannot be called from outside of `myPureMacro`, and since `myPureMacro` is a Pure Macro, this scenario can be considered Pure.
+        console.log(
+            now(handler)
+        )
+    })
+}
 
 ```
 
@@ -602,7 +628,7 @@ So `promise` syntax is preferred in Lean.
 Parallels
 ==============
 
-Since `PureMutable` restricts multiple macros spawning at once, we need another type of macro that is better equipped to handle the spawning of multiple macros, collecting their results and converging back to a single macro.
+Since `mutable` restricts multiple macros spawning at once, we need another type of macro that is better equipped to handle the spawning of multiple macros, collecting their results and converging back to a single macro.
 
 `Promise.all` provides a standard way of doing this...
 
