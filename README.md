@@ -111,7 +111,7 @@ const fn1 = (a: number) => (b: number) => a + b
 
 ### Taking Partials Further;
 
-Values in an outer scope can be used safely - so long as all macros obey the rule of not mutating the state of any running macro.
+Values in an outer scope can be used safely - so long as macros obey the rule of not mutating the state of any running macro.
 With that rule being followed, then functions and macros that use values from an outer-scope will still return the same value when passed a given set of inputs - at least in the macro / context they are running in (Since values (including outer-scope values) cannot change during the running of any macro).
 
 This is effectively an extension on the concept of Partial Functions.
@@ -124,8 +124,8 @@ These types of functions / macros MUST all eventually roll up to a Pure Function
 const myPureMacro = (): void => {
     now(n1 => {
         const handler =
-            (n2: number) => n1 + n2 // Since n1 will be the same throughout the running of this macro, `handler` will always produce a predictable result - but only in the context of the currently running macro.
-                                    // Since `handler` cannot be called from outside of `myPureMacro`, and since `myPureMacro` is a Pure Macro, this scenario can be considered Pure.
+            (n2: number) => n1 + n2 // n1 and n2 will always be the same throughout the running of a Pure Macro.
+
         console.log(
             now(handler)
         )
