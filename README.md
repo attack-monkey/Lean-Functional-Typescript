@@ -109,7 +109,7 @@ const fn1 = (a: number) => (b: number) => a + b
 
 ```
 
-### Taking Partials Further;
+### Taking Partials Further...
 
 Values in an outer scope can be used safely - so long as macros obey the rule of not mutating the state of any running macro.
 With that rule being followed, then functions and macros that use values from an outer-scope will still return the same value when passed a given set of inputs - at least in the macro / context they are running in (Since values (including outer-scope values) cannot change during the running of any macro).
@@ -253,10 +253,8 @@ loop()
 
 ```
 
-When the unwrap macro is called, the handler represents the 'unwrapped context' where the value can be accessed.
-While in the unwrapped context, calling a mutation OR unwrap macro will cause the new macro to 
-queue in the process-queue until the unwrapped context (and subsequent queued macros) have played out.
-This ensures that the value in the unwrapped context does not mutate, and therefore everything remains pure.
+When the unwrap or mutate macro is called, the handler recieves the 'unwrapped value' and the handler itself represents the 'unwrapped context'.
+In this 'unwrapped context' - the unwrapped value DOES NOT MUTATE. Calling the mutate macro only mutates the state of the mutable, but that new state is only made available upon calling unwrap or mutate again. This ensures that `mutable` doesn't violate purity by mutating values in a currently running macro.
 
 Pure Functions
 ==============
