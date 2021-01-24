@@ -652,9 +652,9 @@ Streams manage multiple values through a flow over a given time.
 
 **Example**
 
-Using mutable to create a record of various capacitors that may be in play
-
 ```typescript
+
+// Using mutable to create a record of various capacitors that may be in play
 
 const [unwrapCapacitorRecord, mutateCapacitorRecord] = mutable({} as Record<string, string[]>)
 
@@ -686,7 +686,7 @@ const capacitor = (store: number) =>
     })
   }
 
-// This is our first stream. It gets passed a value (known as the source).
+// This is our stream. It gets passed a value (known as the source).
 // It then flows the value through our capacitor.
 // The capacitor is designed to store values, until it reaches a set length (in this case, 2).
 // Then the capacitor will send the stored array into the next step and reset the store.
