@@ -615,6 +615,8 @@ match('hello')
   
 ```
 
+More on this a little later on.
+
 Async
 =====
 
@@ -657,6 +659,94 @@ Promise.all([
   promise1,
   promise2
 ]).then(handler)
+
+```
+
+Flows
+==============
+
+Flows are another way of running asynchronous macros.
+`flow` works much like `pipe` but allows both sync and async functions.
+
+```typescript
+
+flow(10)
+  .pipe(v => v + 10)
+  .pipe(logAndThrough) // logs the current value and then passes the value to the next handler.
+  .pipe(v => v + 20)
+  .then(wait(1000)) // This step is blocks the flow for one second
+  .pipe(logAndThrough)
+  
+```
+
+**Creating an Async step in the flow**
+
+```typescript
+
+flow(10)
+  .pipe(v => v + 10)
+  .then((val, resolve) => {
+    // Example of how to write an async function.
+    // The flow won't continue until resolve is called, and that won't happen until the timeout is reached.
+    setTimeout(() => resolve(val + 90), 1000)
+  }) // This step is blocks the flow for one second
+  .pipe(logAndThrough)
+  
+```
+
+**Using Flow to create Streams**
+
+Streams manage multiple values through a flow over a given time.
+
+**Example**
+
+Using mutable to create a record of various capacitors that may be in play
+
+```typescript
+
+const [unwrapCapacitorRecord, mutateCapacitorRecord] = mutable({} as Record<string, string[]>)
+
+// Each function / macro that gets placed on the flow's queue gets assigned an id.
+// This allows aggregator macros to use this id to aggregate values at a particular point in a flow.
+// This gives rise to the ability to stream multiple values through a flow and do things like store values in the pipe until we get a certain amount of values through.
+
+// That's what this capacitor macro does...
+
+const capacitor = (store: number) =>
+  (newVal: string, resolve: (a: string[]) => void, id: string) => {
+    // the id is what makes this instance of the function unique.
+    // Here we update the capacitor record at the given id by appending to the array.
+    mutateCapacitorRecord(record => ({
+      ...record, [id]: [
+        ...record[id] || [], newVal
+      ]
+    }))
+    // now with the updated record...
+    unwrapCapacitorRecord(record => {
+      // if the record at the id is at the right length...
+      if (record[id].length > store - 1) {
+        // reset the capacitor
+        mutateCapacitorRecord(record => ({ ...record, [id]: [] as string[] }))
+        // Note that since `mutateCapacitorRecord` has been called within the unwrapped context of `unwrapCapacitorRecord`,
+        // the updated value will not be available until the next unwrap / mutate occurs.
+        resolve(record[id])
+      }
+    })
+  }
+
+// This is our first stream. It gets passed a value (known as the source).
+// It then flows the value through our capacitor.
+// The capacitor is designed to store values, until it reaches a set length (in this case, 2).
+// Then the capacitor will send the stored array into the next step and reset the store.
+
+const stream = (a: string) =>
+  flow(a)
+    .then(capacitor(2))
+    .pipe(logAndThrough)
+
+stream('hello') // nothing displayed, as the capacitor has just stored this.
+stream('world') // ['hello', 'world'] is displayed, as the capacitor has hit it's 2 item limit.
+stream('hello') // Since the last value reset the capacitor - nothing is displayed here.
 
 ```
 
