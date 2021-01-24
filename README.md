@@ -250,9 +250,9 @@ const newIdGen: NewIdGen = () => {
     }
 }
 
-const id1 = newIdGen()
-id1(id => console.log(id)) // 1
-id1(id => console.log(id)) // 2
+const myIdGen = newIdGen()
+myIdGen(id => console.log(id)) // 1
+myIdGen(id => console.log(id)) // 2
 
 ```
 
@@ -346,7 +346,7 @@ const seven = add3(4)
 
 ```
 
-**Which are easier to use in flows than regular multi-argument functions**
+**Which are easier to use in pipes than regular multi-argument functions**
 
 ```typescript
 
