@@ -124,11 +124,12 @@ These types of functions / macros MUST all eventually roll up to a Pure Function
 const myPureMacro = (): void => {
     now(n1 => {
         const handler =
-            (n2: number) => n1 + n2 // n1 and n2 will always be the same throughout the running of a Pure Macro.
-
+            (n2: number) => n1 + n2 // `n1` will always be the same throughout the running of myPureMacro.
+            
         console.log(
             now(handler)
         )
+        
     })
 }
 
