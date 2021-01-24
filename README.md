@@ -598,25 +598,6 @@ pipe('hello world')
 
 ```
 
-## Pattern Matching
-
-In functional languages like F# most if / then / else style logic is handled through Pattern Matching.
-
-Lean also provides pattern matching.
-
-Here it's possible to create a type that can be matched against at run-time, and based on that match, trigger a function.
-
-```typescript
-
-match('hello')
-  .with_($string, s => console.log(s + ' world'))
-  .with_($unknown, _ => console.log('unable to match'))
-  .done()
-  
-```
-
-More on this a little later on.
-
 Async
 =====
 
@@ -762,8 +743,24 @@ stream('hello') // Since the last value reset the capacitor - nothing is display
 
 ```
 
-Pattern Matching - In Depth
-===========================
+
+Pattern Matching
+================
+
+In functional languages like F# most if / then / else style logic is handled through Pattern Matching.
+
+Lean also provides pattern matching.
+
+Here it's possible to create a type that can be matched against at run-time, and based on that match, trigger a function.
+
+```typescript
+
+match('hello')
+  .with_($string, s => console.log(s + ' world'))
+  .with_($unknown, _ => console.log('unable to match'))
+  .done()
+  
+```
 
 Pattern matching takes a value and matches it against a series of patterns.
 The first pattern to match, fires the value (with type inferred from the pattern) into an accompanying function.
