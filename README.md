@@ -481,11 +481,9 @@ const myNewList = myList
 
 ```
 
-So while 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript... it is not preferred in Lean. In the above it would mean that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, or use class extensions, or messy mixins.
+While 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript, it is not preferred in Lean. In the above it would mean that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, use class extensions, or messy mixins.
 
-> Note: In essence, the `pipe` function is a wrapper around a `Pipe` class that lifts a value into a 'pipeable context'. That is, it binds the `pipe` and `done` methods to `this`. However Lean uses `pipe` as a utility for moving data from one function to the next, rather than transforming data. Therefore the number of methods on `pipe` is minimal, and doesn't suffer from the need to extend the class, etc. The same goes for native Promise syntax, and even Rxjs.
-
-So, in the above, if `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
+If `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
 
 ```typescript
 
@@ -497,7 +495,7 @@ const myNewList =
 
 ```
 
-None of the functions are 'bound' to `this` in a class / constructor, and instead can work on any values that meet their call signature. Simplicity and flexibility are baked in. **This is major part of what Lean is all about**
+The functions can now work on any values that meet their call signature. Simplicity and flexibility are baked in. **This is major part of what Lean is all about**
 
 **In Lean, the focus is on data that meets the call signature of the function.**
 
@@ -558,45 +556,6 @@ pipe(myRecord)
 ```
 
 > Note that `Record` and `Array_` are provided in the Prelude.
-
-Even though the `Array_` and `Record` library have a set of methods, the data being passed into these methods are not bound to those methods.
-For example, there may be a different library that acts on just number arrays - let's call it `NumberArray`. An array of numbers would therefore be able to be passed into any of the methods from both `Array_` and `NumberArray` and may look something like...
-
-```typescript
-
-pipe([1, 2, 3])
-  .pipe(Array_.map(item => item * 2))
-  .pipe(NumberArray.sum)
-  .pipe(console.log)
-
-```
-
-## If you do need to write functional classes... you can do so without mutating properties...
-
-It's possible to write classes that don't mutate properties and that still achieve chainability.
-
-In this example, rather than mutate the property `a`, the `pipe` method returns a new `Pipe` object altogether.
-
-This is essentially the `pipe` function that the Lean Prelude provides...
-
-```typescript
-
-class Pipe <A> { 
-    private a: A
-    static of = <A>(a: A) => new Pipe(a)
-    constructor (a: A) {
-        this.a = a
-    }
-    pipe = <B>(f: (a: A) => B) => Pipe.of(f(this.a))
-    done = () => this.a
-}
-
-const pipe = Pipe.of
-
-pipe('hello world')
-  .pipe(console.log)
-
-```
 
 Async
 =====
