@@ -274,8 +274,8 @@ loop()
 
 ```
 
-When the unwrap or mutate macro is called, the handler recieves the 'unwrapped value' and the handler itself represents the 'unwrapped context'.
-In this 'unwrapped context' - the unwrapped value DOES NOT MUTATE. Calling the mutate macro only mutates the state of the mutable, but that new state is only made available upon calling unwrap or mutate again. This ensures that `mutable` doesn't violate purity by mutating values in a currently running macro.
+When an unwrap or mutate macro is called, the handler recieves the 'unwrapped value', and the handler itself represents the 'unwrapped context'.
+In this 'unwrapped context' - the unwrapped value cannot be mutated directly. Calling the mutate macro only mutates the state of the mutable, but that new state is only made available upon a creating a new 'unwrapped context'. This ensures that `mutable` doesn't violate purity by mutating values in a currently running macro.
 
 Pure Functions
 ==============
