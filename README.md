@@ -644,7 +644,19 @@ handler(b) // handler can still be pure - but this function / macro has been pol
 
 ```
 
-So `promise` syntax is preferred in Lean.
+But, remember ... impurities can be wrapped in a block-scope...
+
+
+```typescript
+
+{
+  const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+  const b = a.json() // This introduces an impure value to b, but is confined to the block-scope.
+  handler(b) // handler is pure - and provides the way out of the block-scope.
+}
+
+```
+
 
 Parallels
 ==============
