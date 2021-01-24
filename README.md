@@ -98,6 +98,26 @@ Pure Macros that wrap Impure Macros can be thought of as an integration to the I
 Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
 The only impurities that should be wrapped are native impurities and third-party impurities.
 
+Block Scoping Impurities
+========================
+
+Another acceptable way of purifying native and third-party impurities, such as Date.now and Math.random, is to block-scope
+the assignment of the impure values. In this way, the impure values cannot leak beyond the boundaries of the block, and the only way out is to call a macro.
+Providing that this macro is pure, then the block-scope can be considered pure.
+
+```typescript
+
+{
+  const d1 = Date.now()
+  const d2 = Math.random()
+  out(d1, d2)
+}
+function out(d1:number, d2: number) {
+  console.log(d1, d2)
+}
+
+```
+
 A Note on partial functions...
 ==============================
 
