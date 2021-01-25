@@ -13,6 +13,8 @@ To get going with Lean, download the **prelude**
 
 `npm i @attack-monkey/lean-f-ts-prelude`
 
+`import { pipe, match } from '@attack-monkey/lean-f-ts-prelude/dist/src'`
+
 It works with both javascript and typescript...
 
 We recommend typescript for the type-safety that it gives.
@@ -998,3 +1000,79 @@ fetchPerson(123).then(
 - Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros call new instances of Child Macros (AKA Handlers) and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
 - By combining Pure Macros and Pattern Matching, Type Certainty can be achieved making code extremely predictable and safe.
 
+## Prelude API
+
+// pattern match api
+class PatternMatch >> of >> with_
+function match
+
+$string
+$array
+$boolean
+$gt
+$lt
+$gte
+$lte
+$literal
+$nothing
+$number
+$record
+$union
+$unknown
+
+export { patternMatch as fmatch, with_ } from 'matcha_match/lib'
+export { $string } from 'matcha_match/lib/runtime-interfaces/$string'
+export { $array } from 'matcha_match/lib/runtime-interfaces/$array'
+export { $boolean } from 'matcha_match/lib/runtime-interfaces/$boolean'
+export { $gt } from 'matcha_match/lib/runtime-interfaces/$gt'
+export { $lt } from 'matcha_match/lib/runtime-interfaces/$lt'
+export { $gte } from 'matcha_match/lib/runtime-interfaces/$gte'
+export { $lte } from 'matcha_match/lib/runtime-interfaces/$lte'
+export { $literal } from 'matcha_match/lib/runtime-interfaces/$literal'
+export { $nothing } from 'matcha_match/lib/runtime-interfaces/$nothing'
+export { $number } from 'matcha_match/lib/runtime-interfaces/$number'
+export { $record } from 'matcha_match/lib/runtime-interfaces/$record'
+export { $union } from 'matcha_match/lib/runtime-interfaces/$union'
+export { $unknown } from 'matcha_match/lib/runtime-interfaces/$unknown'
+
+// pipe
+
+class Pipe >> of >> pipe >> done
+function pipe
+
+// flow
+
+class Flow >> of >> pipe >> then
+function flow
+
+// flow helpers
+
+function wait
+
+function logAndThrough
+
+// mutable
+
+function mutable
+
+// clone
+
+function clone - makes a deep-clone of any array / object (dereferences the new object from the old)
+
+// maybe api
+
+type Maybe<A>
+type Nothing
+  
+class Maybe >> of >> map
+function maybe
+
+// Identity
+
+function id
+
+// Libraries
+
+Array_ >> map >> filter >> reduce
+
+Record >> map >> filter >> reduce
