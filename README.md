@@ -956,11 +956,11 @@ _Used in place of `Flow.of`_
 
 #### flow helpers
 
-**function* `wait`
+**function** `wait`
 
 _waits a period of time before passing the previous value in a flow to the next step_
 
-Eg. flow(10).then(wait(1000)).pipe(ten => console.log(ten))
+Eg. `flow(10).then(wait(1000)).pipe(ten => console.log(ten))`
 
 **function** `logAndThrough`
 
