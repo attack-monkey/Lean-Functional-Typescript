@@ -860,77 +860,126 @@ fetchPerson(123).then(
 
 ## Prelude API
 
-// pattern match api
-class PatternMatch >> of >> with_
-function match
+### pattern match api
 
-$string
-$array
-$boolean
-$gt
-$lt
-$gte
-$lte
-$literal
-$nothing
-$number
-$record
-$union
-$unknown
+**class** `PatternMatch`
 
-export { patternMatch as fmatch, with_ } from 'matcha_match/lib'
-export { $string } from 'matcha_match/lib/runtime-interfaces/$string'
-export { $array } from 'matcha_match/lib/runtime-interfaces/$array'
-export { $boolean } from 'matcha_match/lib/runtime-interfaces/$boolean'
-export { $gt } from 'matcha_match/lib/runtime-interfaces/$gt'
-export { $lt } from 'matcha_match/lib/runtime-interfaces/$lt'
-export { $gte } from 'matcha_match/lib/runtime-interfaces/$gte'
-export { $lte } from 'matcha_match/lib/runtime-interfaces/$lte'
-export { $literal } from 'matcha_match/lib/runtime-interfaces/$literal'
-export { $nothing } from 'matcha_match/lib/runtime-interfaces/$nothing'
-export { $number } from 'matcha_match/lib/runtime-interfaces/$number'
-export { $record } from 'matcha_match/lib/runtime-interfaces/$record'
-export { $union } from 'matcha_match/lib/runtime-interfaces/$union'
-export { $unknown } from 'matcha_match/lib/runtime-interfaces/$unknown'
+**methods of `PatternMatch`**
 
-// pipe
+`of`
 
-class Pipe >> of >> pipe >> done
-function pipe
+_Creates a PatternMatch chain. Usually `match` is used instead._
 
-// flow
+Eg. `PatternMatch.of('cat')`
 
-class Flow >> of >> pipe >> then
-function flow
+`with_`
 
-// flow helpers
+```typescript
 
-function wait
-
-function logAndThrough
-
-// mutable
-
-function mutable
-
-// clone
-
-function clone - makes a deep-clone of any array / object (dereferences the new object from the old)
-
-// maybe api
-
-type Maybe<A>
-type Nothing
+match('cat')
+  .with_($string, str => console.log(`The string is ${str}`))
+  .done()
   
-class Maybe >> of >> map
-function maybe
+```
 
-// Identity
+_Provides a matching arm, with the thing to match against and a function to call, should the match occur..._
 
-function id
+`done`
 
-// Libraries
+_Executes the patternMatch. `done` must be called at the end of the chain, in order for the matching to execute._
 
-Array_ >> map >> filter >> reduce
+**function** `match`
 
-Record >> map >> filter >> reduce
+_Used in place of `PatternMatch.of`_
+
+**Runtime Interfaces**
+
+- $string
+- $array
+- $boolean
+- $gt
+- $lt
+- $gte
+- $lte
+- $literal
+- $nothing
+- $number
+- $record
+- $union
+- $unknown
+
+### pipe
+
+**class** `Pipe`
+
+**methods of `Pipe`** 
+
+`of`
+
+_Creates a Pipeable value. `pipe` is usually used instead._
+
+`pipe`
+
+_pipes the previous result into a new function_
+
+Eg. `pipe(10).pipe(a => console.log(a + 10))`
+
+`done`
+
+_Returns the final value._
+
+**function** `pipe`
+
+_Used in place of `Pipe.of`_
+
+### flow
+
+**class** `Flow`
+
+**methods of `Flow`**
+
+`of`
+
+_Creates a Flowable value. `flow` is usually used instead._
+
+`pipe`
+
+_pipes the previous result into a new function_
+
+`then`
+
+_pipes the previous result into a **potentially asynchronous** new function_
+
+**function** `flow`
+
+_Used in place of `Flow.of`_
+
+#### flow helpers
+
+**function* `wait`
+
+_waits a period of time before passing the previous value in a flow to the next step_
+
+Eg. flow(10).then(wait(1000)).pipe(ten => console.log(ten))
+
+**function** `logAndThrough`
+
+_Logs the previous value in a pipe or flow, and then passes that value to the next step_
+
+### mutable
+
+**function** `mutable`
+
+See docs above
+
+**function** clone
+
+_function clone - makes a deep-clone of any array / object (dereferences the new object from the old)_
+
+Eg. `const a = clone(b)`
+
+### Libraries
+
+**Array_** _See docs above_
+
+**Record** _See docs above_
