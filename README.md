@@ -810,7 +810,7 @@ fetch('https://jsonplaceholder.typicode.com/todos/1')
   .then(response => response.json())
   .then(json =>
     match(json)
-      .with_($validJson, json => console.log(`yay - ${ json.title }`)),
+      .with_($validJson, json => console.log(`yay - ${ json.title }`))
       .with_($unknown, a => console.log(`Unexpected JSON response from API`))
   )
 
@@ -844,7 +844,7 @@ const personMacro = (person: Person) => {
 
 fetchPerson(123).then(
   person => match(person)
-    .with_($person, personMacro /* this only runs if a match occurs */),
+    .with_($person, personMacro /* this only runs if a match occurs */)
     .with_($nothing, _ => console.log('not a person'))
 )
 
