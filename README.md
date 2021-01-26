@@ -812,6 +812,7 @@ fetch('https://jsonplaceholder.typicode.com/todos/1')
     match(json)
       .with_($validJson, json => console.log(`yay - ${ json.title }`))
       .with_($unknown, a => console.log(`Unexpected JSON response from API`))
+      .done()
   )
 
 ```
@@ -846,6 +847,7 @@ fetchPerson(123).then(
   person => match(person)
     .with_($person, personMacro /* this only runs if a match occurs */)
     .with_($nothing, _ => console.log('not a person'))
+    .done()
 )
 
 ```
