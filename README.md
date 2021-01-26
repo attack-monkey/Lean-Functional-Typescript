@@ -2,7 +2,7 @@
 
 Lean is a Pure Functional way of writing Typescript applications.
 
-It achieves purity through the concept of Pure Functions and Pure Macros.
+It achieves purity through the the use of Pure Functions and Pure Macros.
 
 Install
 =======
@@ -19,14 +19,60 @@ It works with both javascript and typescript...
 
 We recommend typescript for the type-safety that it gives.
 
-Lean Principles
+Lean Rules
 ===============
 
-1. **Every impurity can be wrapped in a 'Pure' Macro' / 'Pure Function'.** (Note: Any function that does something other than just return a result, is known as a macro in Lean. Functions calculate things. Macros do things).
+1. All values must be known before being brought into scope, or created by applying immutable operations to those known values.
 
-2. **Once a variable has been declared - it cannot be changed**
+For example:
 
-These two guiding principles form the basis of Lean Functional Typescript.
+```typescript
+
+// In this example c is already in scope with a value of 10
+
+const product_of_a_b_and_c = (a: number, b: number) => {
+
+  // New scope begins between the curly braces. At the point at which this scope runs a, b, and c will all be known values
+  
+  const product_of_a_and_b = a * b // This is allowed as it has been created from known values.
+  
+  return product_of_a_and_b * c
+}
+
+product_of_a_b_and_c(1, 2) // 20
+
+```
+
+2. Once a variable has been brought into scope, it must not be mutated. To enforce this, mutability is handled by `mutatble`, which abides by this rule.
+
+```typescript
+
+const [ unwrap_a, mutate_a ] = mutable(10)
+
+unwrap_a(a => {
+  
+  console.log(`a is 10: ${a}`)
+  
+  mutate_a(a => a + 10) // While this mutates `a` to 20, the new state is only accessible by (re)unwrapping the new state.
+  
+  console.log(`a is still 10 in this scope ${a}`)
+  
+  unwrap_a(a => {
+    console.log(`Now a is 20: ${a}`)
+  })
+  
+})
+
+```
+
+By following these two rules, any 'do operations' are abstracted away from the otherwise Pure Program. No 'do operations' cause side-effects in the currently running code.
+
+These two guiding Rules form the basis of Lean Functional Typescript.
+
+Macros
+======
+
+In Lean, functions that 'do things' other than just return a result, are referred to as Macros. Macros that abide by the above rules, and otherwise behave as Pure Functions, are known as Pure Macros.
 
 A note on `undefined`, `void`, and `null`
 ================================
@@ -52,17 +98,6 @@ In Lean a function can still return `undefined`, `void`, `null`, and still be re
 
 Pure Macros
 ===========
-
-- A Macro is a function that 'does' something other than just return a result. 
-- All Macros in Lean are either pure OR native / third-party impurities, that are wrapped by a Pure Macros.
-- Pure Macros abstract the 'doing' part (aka side-effect) out of the program and otherwise behave as pure functions.
-- When passed the same set of inputs, Pure Macros always return the same result (even if that result is undefined), and therefore appear as pure functions to the currently running function / macro.
-- Pure Macros do not mutate **anything** in any running functions / macros.
-
-In this way `console.log` is a pure macro but `Date.now()` is not.
-`Date.now()` is considered impure as it returns a different value each time it is called.
-
-Rather than return impure values, Pure Macros take a 'Handler' as an argument. The Handler is itself a PureMacro, designed to accept the impure result as it's argument.
 
 The `now` macro below, is an example of how a Pure Macro can be written to wrap around it's impure variant.
 
@@ -100,67 +135,10 @@ Pure Macros that wrap Impure Macros can be thought of as an integration to the I
 Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
 The only impurities that should be wrapped are native impurities and third-party impurities.
 
-Block Scoping Impurities
-========================
-
-Another acceptable way of purifying native and third-party impurities, such as Date.now and Math.random, is to block-scope
-the assignment of the impure values. In this way, the impure values cannot leak beyond the boundaries of the block, and the only way out is to call a macro.
-Providing that this macro is pure, then the block-scope can be considered pure.
-
-```typescript
-
-{
-  const d1 = Date.now()
-  const d2 = Math.random()
-  out(d1, d2)
-}
-function out(d1:number, d2: number) {
-  console.log(d1, d2)
-}
-
-```
-
-A Note on partial functions...
-==============================
-
-Partial Functions occur when a function returns a function that then uses both the outer and inner scope to form a result. Technically the returned function is using scope outside of it's direct inputs to calculate a result and could be considered impure. However, since there is no way of calling the inner function other than by calling the outer function, everything is considered safe and pure. Partial functions are also referred to as curried functions, and are a common part of functional programming in general.
-
-```typescript
-
-const fn1 = (a: number) => (b: number) => a + b  
-
-```
-
-### Taking Partials Further...
-
-Values in an outer scope can be used safely - so long as macros obey the rule of not mutating the state of any running macro.
-With that rule being followed, then functions and macros that use values from an outer-scope will still return the same value when passed a given set of inputs - at least in the macro / context they are running in (Since values (including outer-scope values) cannot change during the running of any macro).
-
-This is effectively an extension on the concept of Partial Functions.
-
-These types of functions / macros cannot be called from outside of the function / macro they are scoped to.
-These types of functions / macros MUST all eventually roll up to a Pure Function / Macro otherwise the application fails to be Pure.
-
-```typescript
-
-const myPureMacro = (): void => {
-    now(n1 => {
-        const handler =
-            (n2: number) => n1 + n2 // `n1` will always be the same throughout the running of myPureMacro.
-            
-        console.log(
-            now(handler)
-        )
-        
-    })
-}
-
-```
-
 Immutable Operations
 ====================
 
-In Lean, **once a variable has been declared - it cannot be changed**. In other words all variables should be considered immutable.
+In Lean, **once a variable has been brought into scope - it cannot be changed**. In other words all variables should be considered immutable.
 
 So instead of mutating variables, use immutable operations and pure functions, and assign the result to a new variable.
 
@@ -194,7 +172,7 @@ pipe('hello')
 Mutables
 ========
 
-Mutability can however be managed in a completely pure way - by abiding by the rules of Pure Macros.
+Mutability can however be managed in a completely pure way - by abiding by the Rules of Lean.
 
 `mutable` returns a tuple containing unwrap and mutate macros.
 
@@ -420,8 +398,6 @@ showCat({ isFluffy: true }) // This kitty is fluffy, and that's all
 
 **Pure Functions can also be recursive and should be used in place of loops - because loops mutate values.**
 
-
-
 An example of a recursive function
 
 ```typescript
@@ -438,66 +414,6 @@ console.log(
 ) // 25
 
 ```
-
-## Prototype Functions
-
-Javascript / Typescript primitives, arrays and other objects all have methods pre-baked into them.
-Some of these methods are mutable (and should not be used within Pure Code).
-Some of these methods are immutable and fit within the functional paradigm.
-Of particular worth are the Array.prototype functions `map`, `filter`, `reduce`.
-
-We can for example take an array of numbers, and 'map' over them - doubling each number...
-
-```typescript
-
-[1, 2, 3].map(item => item * 2)
-
-```
-
-**Method Chaining**
-
-Method chaining works by calling a method on an object, which produces a result. The result itself has methods, which can then be called, and so on.
-
-```typescript
-
-[1, 1.5, 2, 3]
-  .map(item => item * 2) // doubles everything to [2, 3, 4, 6]
-  .filter(item => item % 2 === 0) // removes any uneven numbers, leaving [2, 4, 6]
-
-```
-
-... And is a common pattern in javascript / typescript
-
-## Chaining vs Piping
-
-It is common to see functional libraries provide classes that 'lift' values to provide methods that then work on the value or collection of values inside...
-
-```typescript
-
-const myList = List.of(1, 2, 3)
-
-const myNewList = myList
-  .reverse()
-  .append('blast off!')
-  .done()
-
-```
-
-While 'lifting' a value into a context that provides the value with methods is a legit way of performing functional programming in javascript, it is not preferred in Lean. In the above it would mean that `reverse` and `append` are bound to the `List` class. If those methods are then to be used in another class, we have to either write those methods again, use class extensions, or messy mixins.
-
-If `reverse` and `append` are simply stand alone functions, then we can use pipes to connect the functions together.
-
-```typescript
-
-const myNewList =
-  pipe([1,2,3])
-    .pipe(reverse)
-    .pipe(append('blast off!'))
-    .done()
-
-```
-
-The functions can now work on any values that meet their call signature. Simplicity and flexibility are baked in. **This is major part of what Lean is all about**
 
 **In Lean, the focus is on data that meets the call signature of the function.**
 
@@ -582,23 +498,22 @@ Javascript and Typescript also provide async / await for handling asynchronicity
 
 const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
 const b = a.json() // This introduces an impure value to b, since we can't be sure what it is.
-handler(b) // handler can still be pure - but this function / macro has been polluted.
+handler(b) // handler can still be pure - but the surrounding scope here has been polluted.
 
 ```
 
-But, remember ... impurities can be wrapped in a block-scope...
+But b never really has to come into scope, and instead `a.json()` can be passed directly to the `handler`.
 
 
 ```typescript
 
-{
-  const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
-  const b = a.json() // This introduces an impure value to b, but is confined to the block-scope.
-  handler(b) // handler is pure - and provides the way out of the block-scope.
+const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+handler(a.json()) // `a.json()` is passed directly to the handler and isn't an accessible value in this scope.
+function handler (a_json) {
+  // a_json comes into scope as a known value
 }
 
 ```
-
 
 Parallels
 ==============
@@ -647,63 +562,6 @@ flow(10)
   .pipe(logAndThrough)
   
 ```
-
-**Using Flow to create Streams**
-
-Streams manage multiple values through a flow over a given time.
-
-**Example**
-
-```typescript
-
-// Using mutable to create a record of various capacitors that may be in play
-
-const [unwrapCapacitorRecord, mutateCapacitorRecord] = mutable({} as Record<string, string[]>)
-
-// Each function / macro that gets placed on the flow's queue gets assigned an id.
-// This allows aggregator macros to use this id to aggregate values at a particular point in a flow.
-// This gives rise to the ability to stream multiple values through a flow and do things like store values in the pipe until we get a certain amount of values through.
-
-// That's what this capacitor macro does...
-
-const capacitor = (store: number) =>
-  (newVal: string, resolve: (a: string[]) => void, id: string) => {
-    // the id is what makes this instance of the function unique.
-    // Here we update the capacitor record at the given id by appending to the array.
-    mutateCapacitorRecord(record => ({
-      ...record, [id]: [
-        ...record[id] || [], newVal
-      ]
-    }))
-    // now with the updated record...
-    unwrapCapacitorRecord(record => {
-      // if the record at the id is at the right length...
-      if (record[id].length > store - 1) {
-        // reset the capacitor
-        mutateCapacitorRecord(record => ({ ...record, [id]: [] as string[] }))
-        // Note that since `mutateCapacitorRecord` has been called within the unwrapped context of `unwrapCapacitorRecord`,
-        // the updated value will not be available until the next unwrap / mutate occurs.
-        resolve(record[id])
-      }
-    })
-  }
-
-// This is our stream. It gets passed a value (known as the source).
-// It then flows the value through our capacitor.
-// The capacitor is designed to store values, until it reaches a set length (in this case, 2).
-// Then the capacitor will send the stored array into the next step and reset the store.
-
-const stream = (a: string) =>
-  flow(a)
-    .then(capacitor(2))
-    .pipe(logAndThrough)
-
-stream('hello') // nothing displayed, as the capacitor has just stored this.
-stream('world') // ['hello', 'world'] is displayed, as the capacitor has hit it's 2 item limit.
-stream('hello') // Since the last value reset the capacitor - nothing is displayed here.
-
-```
-
 
 Pattern Matching
 ================
