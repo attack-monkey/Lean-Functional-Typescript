@@ -72,7 +72,7 @@ These two guiding Rules form the basis of Lean Functional Typescript.
 Actions
 ======
 
-In Lean, functions that 'do things' other than just return a result, are referred to as Action. Actions that abide by the above rules, and otherwise behave as Pure Functions, are known as Pure Actions.
+In Lean, functions that 'do things' other than just return a result, are referred to as Actions. Actions that abide by the above rules, and otherwise behave as Pure Functions, are known as Pure Actions.
 
 A note on `undefined`, `void`, and `null`
 ================================
@@ -96,7 +96,7 @@ console.log(myFn()) // undefined
 
 In Lean a function can still return `undefined`, `void`, `null`, and still be regarded as pure!
 
-Pure Macros
+Pure Actions
 ===========
 
 The `now` Action below, is an example of how a Pure Action can be written to wrap around it's impure variant.
@@ -120,7 +120,7 @@ The trick is that rather than leak impurity into any currently running function 
 
 ### Promises
 
-Promises already conform to the notion of Pure Action, and infact by wrapping `Date.now()` in `Promise.resolve` we end up with a very similar result to above...
+Promises already conform to the notion of Pure Action, and infact by wrapping `Date.now()` in `Promise.resolve()` we end up with a very similar result to above...
 
 ```typescript
 
