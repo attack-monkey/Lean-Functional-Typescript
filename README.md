@@ -2,7 +2,7 @@
 
 Lean is a Pure Functional way of writing Typescript applications.
 
-It achieves purity through the the use of Pure Functions and Pure Macros.
+It achieves purity through the the use of Pure Functions and Pure Actions.
 
 Install
 =======
@@ -58,7 +58,7 @@ unwrap_a(a => {
   console.log(`a is still 10 in this scope ${a}`)
   
   unwrap_a(a => {
-    console.log(`Now a is 20: ${a}`)
+    console.log(`In this new scope, a is 20: ${a}`)
   })
   
 })
@@ -69,10 +69,10 @@ By following these two rules, any 'do operations' are abstracted away from the o
 
 These two guiding Rules form the basis of Lean Functional Typescript.
 
-Macros
+Actions
 ======
 
-In Lean, functions that 'do things' other than just return a result, are referred to as Macros. Macros that abide by the above rules, and otherwise behave as Pure Functions, are known as Pure Macros.
+In Lean, functions that 'do things' other than just return a result, are referred to as Action. Actions that abide by the above rules, and otherwise behave as Pure Functions, are known as Pure Actions.
 
 A note on `undefined`, `void`, and `null`
 ================================
@@ -99,7 +99,7 @@ In Lean a function can still return `undefined`, `void`, `null`, and still be re
 Pure Macros
 ===========
 
-The `now` macro below, is an example of how a Pure Macro can be written to wrap around it's impure variant.
+The `now` Action below, is an example of how a Pure Action can be written to wrap around it's impure variant.
 
 ```typescript
 
@@ -116,11 +116,11 @@ When `now` gets called it passes the result into the `handler`.
 The `handler` is pure as it always returns the same thing - undefined. 
 If we were to log `now(handler)`, we would see that the return value is also always `undefined`, and therefore pure.
 
-The trick is that rather than leak impurity into any currently running function / macro, Pure Macros call an instance of the Handler Macro - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
+The trick is that rather than leak impurity into any currently running function / macro, Pure Actions call an instance of the Handler Action - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
 
 ### Promises
 
-Promises already conform to the notion of Pure Macro, and infact by wrapping `Date.now()` in `Promise.resolve` we end up with a very similar result to above...
+Promises already conform to the notion of Pure Action, and infact by wrapping `Date.now()` in `Promise.resolve` we end up with a very similar result to above...
 
 ```typescript
 
@@ -131,8 +131,8 @@ Promise.resolve(Date.now()).then(handler)
 Wrapping Impurities
 ===================
 
-Pure Macros that wrap Impure Macros can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
-Writing Pure Macros to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
+Pure Actions that wrap Impure Actions can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
+Writing Pure Actions to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
 The only impurities that should be wrapped are native impurities and third-party impurities.
 
 Immutable Operations
@@ -192,7 +192,7 @@ unwrapCat(console.log) // felix!
 
 ```
 
-Calling `mutateCat` does not mutate any value in any currently running macro, and can therefore be considered a Pure Macro.
+Calling `mutateCat` does not mutate any value in any currently running macro, and can therefore be considered a Pure Action.
 
 **Using a Mutable Tuple to organise parallel operations**
 
@@ -264,7 +264,7 @@ Pure Functions are the building blocks of any functional programming. Pure Funct
 
 This therefore enforces data that is immutable.
 
-Like Pure Macros, whenever they are passed the same set of inputs - they always return the same output.
+Like Pure Actions, whenever they are passed the same set of inputs - they always return the same output.
   
 **Single argument functions are known as unary functions**
 
@@ -826,7 +826,7 @@ The return value of pattern matching is often a `union` type or just plain `unkn
 Instead we can drive type-cirtainty by not returning a response to a variable at all.
 Instead we call a macro passing in the value of cirtain-type from the inferred match.
 
-In the below `personMacro` only fires if `bob` matches `$person` so if `personMacro` runs at all, then it is with type-cirtainty.
+In the below `personAction` only fires if `bob` matches `$person` so if `personAction` runs at all, then it is with type-cirtainty.
 
 ```typescript
 
@@ -838,14 +838,14 @@ const $person = {
 
 type Person = typeof $person
 
-const personMacro = (person: Person) => {
+const personAction = (person: Person) => {
   //this macro runs with type cirtainty :D
   console.log(`${person.name.first} is safe`)
 }
 
 fetchPerson(123).then(
   person => match(person)
-    .with_($person, personMacro /* this only runs if a match occurs */)
+    .with_($person, personAction /* this only runs if a match occurs */)
     .with_($nothing, _ => console.log('not a person'))
     .done()
 )
@@ -857,8 +857,8 @@ fetchPerson(123).then(
 - Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
 - Data is piped through functions to create complex data transformations.
 - Pure Functions take in data, and return new data without mutating the input or any other variables
-- Pure Macros 'do something' as well as return a value. When dealing with impure values, Pure Macros call new instances of Child Macros (AKA Handlers) and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
-- By combining Pure Macros and Pattern Matching, Type Certainty can be achieved making code extremely predictable and safe.
+- Pure Actions 'do something' as well as return a value. When dealing with impure values, Pure Actions call new instances of Child Actions (AKA Handlers) and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
+- By combining Pure Actions and Pattern Matching, Type Certainty can be achieved making code extremely predictable and safe.
 
 ## Prelude API
 
