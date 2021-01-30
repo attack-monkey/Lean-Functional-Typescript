@@ -116,7 +116,7 @@ When `now` gets called it passes the result into the `handler`.
 The `handler` is pure as it always returns the same thing - undefined. 
 If we were to log `now(handler)`, we would see that the return value is also always `undefined`, and therefore pure.
 
-The trick is that rather than leak impurity into any currently running function / macro, Pure Actions call an instance of the Handler Action - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
+The trick is that rather than leak impurity into any currently running function / action, Pure Actions call an instance of the Handler Action - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
 
 ### Promises
 
@@ -174,11 +174,11 @@ Mutables
 
 Mutability can however be managed in a completely pure way - by abiding by the Rules of Lean.
 
-`mutable` returns a tuple containing unwrap and mutate macros.
+`mutable` returns a tuple containing unwrap and mutate actions.
 
-Calling the mutate macro calls the handler passing in the current value. The return value of the handler becomes the new value, however nothing in any currently running macro is mutated.
+Calling the mutate action calls the handler passing in the current value. The return value of the handler becomes the new value, however nothing in any currently running action is mutated.
 
-When the upwrap macro is called it's handler is called, passing in the now updated value.
+When the upwrap action is called it's handler is called, passing in the now updated value.
 
 ```typescript
 
@@ -192,7 +192,7 @@ unwrapCat(console.log) // felix!
 
 ```
 
-Calling `mutateCat` does not mutate any value in any currently running macro, and can therefore be considered a Pure Action.
+Calling `mutateCat` does not mutate any value in any currently running action, and can therefore be considered a Pure Action.
 
 **Using a Mutable Tuple to organise parallel operations**
 
@@ -244,7 +244,7 @@ const [unwrapValue, mutateValue] = mutable(10)
 
 const loop = () => unwrapValue(a => {
     console.log(`val before: ${a}`)
-    // This mutation event does not mutate the current macro - so logging before and after this line will yield the same value.
+    // This mutation event does not mutate the current action - so logging before and after this line will yield the same value.
     mutateValue(a => a + 1)
     if (a < 12) loop()
     console.log(`val after: ${a}`)
@@ -254,8 +254,8 @@ loop()
 
 ```
 
-When an unwrap or mutate macro is called, the handler recieves the 'unwrapped value', and the handler itself represents the 'unwrapped context'.
-In this 'unwrapped context' - the unwrapped value cannot be mutated directly. Calling the mutate macro only mutates the state of the mutable, but that new state is only made available upon creating a new 'unwrapped context'. This ensures that `mutable` doesn't violate purity by mutating values in a currently running macro.
+When an unwrap or mutate action is called, the handler recieves the 'unwrapped value', and the handler itself represents the 'unwrapped context'.
+In this 'unwrapped context' - the unwrapped value cannot be mutated directly. Calling the mutate action only mutates the state of the mutable, but that new state is only made available upon creating a new 'unwrapped context'. This ensures that `mutable` doesn't violate purity by mutating values in a currently running action.
 
 Pure Functions
 ==============
@@ -518,7 +518,7 @@ function handler (a_json) {
 Parallels
 ==============
 
-Since `mutable` restricts multiple macros spawning at once, we need another type of macro that is better equipped to handle the spawning of multiple macros, collecting their results and converging back to a single macro.
+Since `mutable` restricts multiple actions spawning at once, we need another type of action that is better equipped to handle the spawning of multiple actions, collecting their results and converging back to a single action.
 
 `Promise.all` provides a standard way of doing this...
 
@@ -534,7 +534,7 @@ Promise.all([
 Flows
 ==============
 
-Flows are another way of running asynchronous macros.
+Flows are another way of running asynchronous action.
 `flow` works much like `pipe` but allows both sync and async functions.
 
 ```typescript
@@ -824,7 +824,7 @@ Pattern matching becomes more powerful when used to drive type-cirtainty.
 The return value of pattern matching is often a `union` type or just plain `unknown`.
 
 Instead we can drive type-cirtainty by not returning a response to a variable at all.
-Instead we call a macro passing in the value of cirtain-type from the inferred match.
+Instead we call a action passing in the value of cirtain-type from the inferred match.
 
 In the below `personAction` only fires if `bob` matches `$person` so if `personAction` runs at all, then it is with type-cirtainty.
 
@@ -839,7 +839,7 @@ const $person = {
 type Person = typeof $person
 
 const personAction = (person: Person) => {
-  //this macro runs with type cirtainty :D
+  //this action runs with type cirtainty :D
   console.log(`${person.name.first} is safe`)
 }
 
