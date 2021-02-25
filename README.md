@@ -652,7 +652,7 @@ const a = {
 }
 
 match(a)
-  .with_({ name: { first: 'johnny '} }, _ => `matching on first name`)
+  .with_({ name: { first: 'johnny'} }, _ => `matching on first name`)
 
 
 ```
@@ -662,7 +662,7 @@ Which is particularly useful when used in combination with destructuring
 ```typescript
 
 match(a)
-  .with_({ name: { first: 'johnny '} }, ({ name: { first: b }}) => `Hey it's ${b}`)
+  .with_({ name: { first: 'johnny'} }, ({ name: { first: b }}) => `Hey it's ${b}`)
 
 ```
 
