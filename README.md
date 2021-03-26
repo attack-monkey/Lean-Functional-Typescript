@@ -2,7 +2,7 @@
 
 Lean is a Pure Functional way of writing Typescript applications.
 
-It achieves purity through the the use of Pure Functions and Pure Actions.
+It achieves purity through the the use of Pure Functions and Abstracted Effects.
 
 Install
 =======
@@ -19,243 +19,10 @@ It works with both javascript and typescript...
 
 We recommend typescript for the type-safety that it gives.
 
-Lean Rules
+The Lean Rule
 ===============
 
-1. All values must be known before being brought into scope, or created by applying immutable operations to those known values.
-
-For example:
-
-```typescript
-
-// In this example c is already in scope with a value of 10
-
-const product_of_a_b_and_c = (a: number, b: number) => {
-
-  // New scope begins between the curly braces. At the point at which this scope runs a, b, and c will all be known values
-  
-  const product_of_a_and_b = a * b // This is allowed as it has been created from known values.
-  
-  return product_of_a_and_b * c
-}
-
-product_of_a_b_and_c(1, 2) // 20
-
-```
-
-2. Once a variable has been brought into scope, it must not be mutated. To enforce this, mutability is handled by `mutatble`, which abides by this rule.
-
-```typescript
-
-const [ unwrap_a, mutate_a ] = mutable(10)
-
-unwrap_a(a => {
-  
-  console.log(`a is 10: ${a}`)
-  
-  mutate_a(a => a + 10) // While this mutates `a` to 20, the new state is only accessible by (re)unwrapping the new state.
-  
-  console.log(`a is still 10 in this scope ${a}`)
-  
-  unwrap_a(a => {
-    console.log(`In this new scope, a is 20: ${a}`)
-  })
-  
-})
-
-```
-
-By following these two rules, any 'do operations' are abstracted away from the otherwise Pure Program. No 'do operations' cause side-effects in the currently running code.
-
-These two guiding Rules form the basis of Lean Functional Typescript.
-
-Actions
-======
-
-In Lean, functions that 'do things' other than just return a result, are referred to as Actions. Actions that abide by the above rules, and otherwise behave as Pure Functions, are known as Pure Actions.
-
-A note on `undefined`, `void`, and `null`
-================================
-
-In functional languages, a pure function must return a value - even if it's an empty value - usually referred to as unit.
-
-In javascript, typescript, and Lean, a function is allowed to return `undefined`, `null`, and `void`.
-Note that in typescript, when a function doesn't return a value at all (`void`), this implicitly returns `undefined`.
-
-Eg.
-
-```typescript
-
-type MyFn = () => void
-
-const myFn: MyFn = () => {}
-
-console.log(myFn()) // undefined
-
-```
-
-In Lean a function can still return `undefined`, `void`, `null`, and still be regarded as pure!
-
-Pure Actions
-===========
-
-The `now` Action below, is an example of how a Pure Action can be written to wrap around it's impure variant.
-
-```typescript
-
-type Now = <A>(handler: (n: number) => A) => A
-
-const now: Now = handler => handler(Date.now())
-
-const handler = (t: number) => console.log('the time is ' + t)
-
-now(handler)
-```
-
-When `now` gets called it passes the result into the `handler`. 
-The `handler` is pure as it always returns the same thing - undefined. 
-If we were to log `now(handler)`, we would see that the return value is also always `undefined`, and therefore pure.
-
-The trick is that rather than leak impurity into any currently running function / action, Pure Actions call an instance of the Handler Action - passing in the impure result as an input. Nothing that is currently running is affected by the operation.
-
-### Promises
-
-Promises already conform to the notion of Pure Action, and infact by wrapping `Date.now()` in `Promise.resolve()` we end up with a very similar result to above...
-
-```typescript
-
-Promise.resolve(Date.now()).then(handler)
-
-```
-
-Wrapping Impurities
-===================
-
-Pure Actions that wrap Impure Actions can be thought of as an integration to the Impure World outside of our otherwise Pure Program. 
-Writing Pure Actions to wrap your own Impure code - should be avoided, and instead Impure code should be re-written to be Pure.
-The only impurities that should be wrapped are native impurities and third-party impurities.
-
-Immutable Operations
-====================
-
-In Lean, **once a variable has been brought into scope - it cannot be changed**. In other words all variables should be considered immutable.
-
-So instead of mutating variables, use immutable operations and pure functions, and assign the result to a new variable.
-
-Eg.
-
-```typescript
-
-const a = 'hello'
-const b = a + ' world'
-
-console.log(a) // hello (i.e. no mutation)
-console.log(b) // hello world
-
-```
-
-or pipe the result of one function into the next function...
-
-```typescript
-
-const appendString = 
-    (str: string) =>
-        (originalStr: string) =>
-            originalStr + str
-        
-pipe('hello')
-    .pipe(appendString(' world'))
-    .pipe(console.log)
-
-```
-
-Mutables
-========
-
-Mutability can however be managed in a completely pure way - by abiding by the Rules of Lean.
-
-`mutable` returns a tuple containing unwrap and mutate actions.
-
-Calling the mutate action calls the handler passing in the current value. The return value of the handler becomes the new value, however nothing in any currently running action is mutated.
-
-When the upwrap action is called it's handler is called, passing in the now updated value.
-
-```typescript
-
-const [unwrapCat, mutateCat] = mutable('garfield')
-
-mutateCat(_ => 'felix')
-
-mutateCat(cv => cv + '!')
-
-unwrapCat(console.log) // felix!
-
-```
-
-Calling `mutateCat` does not mutate any value in any currently running action, and can therefore be considered a Pure Action.
-
-**Using a Mutable Tuple to organise parallel operations**
-
-```typescript
-
-type TempTuple = [string | undefined, string | undefined, string | undefined]
-const [unwrapTuple, mutateTuple] = mutable([ undefined, undefined, undefined ] as TempTuple)
-
-const runIfComplete = (tup: TempTuple) => {
-    if (tup.every(item => !!item)) {
-        console.log(tup)
-    }
-}
-
-mutateTuple(tup => ['purple', tup[1], tup[2]])
-unwrapTuple(runIfComplete)
-mutateTuple(tup => [tup[0], 'monkey', tup[2]])
-unwrapTuple(runIfComplete)
-mutateTuple(tup => [tup[0], tup[1], 'dishwasher'])
-unwrapTuple(runIfComplete) // ["purple", "monkey", "dishwasher"]
-
-```
-
-**An incremental id generator using mutables**
-
-```typescript
-
-type NewIdGen = () => (f: (cv: number) => void) => void
-
-const newIdGen: NewIdGen = () => {
-    const [unwrapId, mutateId] = mutable(0)
-    return f => {
-        mutateId(id => id + 1)
-        unwrapId(id => f(id))
-    }
-}
-
-const myIdGen = newIdGen()
-myIdGen(id => console.log(id)) // 1
-myIdGen(id => console.log(id)) // 2
-
-```
-
-**Creating a loop where by a mutation event is followed by recalling the unwrap event until a condition is met.**
-
-```typescript
-
-const [unwrapValue, mutateValue] = mutable(10)
-
-const loop = () => unwrapValue(a => {
-    console.log(`val before: ${a}`)
-    // This mutation event does not mutate the current action - so logging before and after this line will yield the same value.
-    mutateValue(a => a + 1)
-    if (a < 12) loop()
-    console.log(`val after: ${a}`)
-})
-
-loop()
-
-```
-
-When an unwrap or mutate action is called, the handler recieves the 'unwrapped value', and the handler itself represents the 'unwrapped context'.
-In this 'unwrapped context' - the unwrapped value cannot be mutated directly. Calling the mutate action only mutates the state of the mutable, but that new state is only made available upon creating a new 'unwrapped context'. This ensures that `mutable` doesn't violate purity by mutating values in a currently running action.
+- Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
 
 Pure Functions
 ==============
@@ -576,8 +343,7 @@ Here it's possible to create a type that can be matched against at run-time, and
 
 match('hello')
   .with_($string, s => console.log(s + ' world'))
-  .with_($unknown, _ => console.log('unable to match'))
-  .done()
+  .otherwise(_ => console.log('unable to match'))
   
 ```
 
@@ -593,48 +359,13 @@ We could do something like...
 match(name)
   .with_('garfield', matchedName => `${matchedName} is a cat`)
   .with_('odie', matchedName => `${matchedName} is a dog`)
+  .otherwise(_ => console.log('unable to match'))
 
 
 ```
 
 In the above `matchedName` in both cases is inferred to be a string - even though `name` may be of unknown type.
 That's because `matchedName` infers it's type from the pattern.
-
-Pattern Matching can be used to return a value.
-The result is the result of the function that fires upon match.
-If there is no match, then the original value is returned instead.
-To return a value, end the chain in `.done()`.
-
-
-```typescript
-
-const name: string = getName()
-
-const a = match(name)
-  .with_('garfield', matchedName => `${matchedName} is a cat`)
-  .with_('odie', matchedName => `${matchedName} is a dog`)
-  .done()
-
-```
-
-In the above, since the value and both `with_` arms all return a string - the compiler is smart enough to know that the resulting type is always string. Therefore `a` gets an inferred type of string.
-
-If one of the arms returned a `number` then `a` would have an inferred type of `string | number`.
-
-### Literal matching
-
-We've already seen how simple equality matches can be made...
-
-```typescript
-
-const a = 'cat' as unknown
-
-const b = match(a)
-  .with_('cat', _ => `hello kitty`),
-  .with_('dog', _ => `hello doggy`)
-
-
-```
 
 But Pattern Matching is far more powerful than that...
 
@@ -653,6 +384,7 @@ const a = {
 
 match(a)
   .with_({ name: { first: 'johnny'} }, _ => `matching on first name`)
+  .otherwise(_ => 'unable to match')
 
 
 ```
@@ -663,7 +395,7 @@ Which is particularly useful when used in combination with destructuring
 
 match(a)
   .with_({ name: { first: 'johnny'} }, ({ name: { first: b }}) => `Hey it's ${b}`)
-
+  .otherwise(_ => 'unable to match')
 ```
 
 ### Runtime Interfaces
@@ -682,6 +414,7 @@ const $matchPattern = {
 
 match(a)
   .with_($matchedPattern, ({ name: { first: b }}) => `${b} is a string`)
+  .otherwise(_ => 'unable to match')
 
 
 ```
@@ -696,6 +429,7 @@ const a = [1, 2, 3]
 
 match(a)
   .with_($array($number), a => `${a} is an array of numbers`)
+  .otherwise(_ => 'unable to match')
 
 
 ```
@@ -704,6 +438,7 @@ match(a)
 
 match(a)
   .with_([1, $number, 3], ([_, b, __]) => `${b} is a number`)
+  .otherwise(_ => 'unable to match')
 
 ```
 
@@ -717,6 +452,7 @@ const a = {
 
 match(a)
   .with_($record($array($number)), a => `A record of arrays of numbers - whoa`)
+  .otherwise(_ => 'unable to match')
 
 
 ```
@@ -730,8 +466,7 @@ console.log(
     .with_($lt(100), _ => `< 100`),
     .with_($gt(100), _ => `> 100`),
     .with_(100, _ => `its 100`),
-    .with_($unknown, _ => `no idea ... probably a cat`) // Use $unknown as a catch all
-    .done()
+    .otherwise(_ => `no idea ... probably a cat`)
 )
 
 ```
@@ -742,6 +477,7 @@ const a = 'cat' as string | number
 
 match(a)
   .with_($union([$string, $number]), _ => `a is string | number`)
+  .otherwise(_ => 'unable to match')
 
 
 ```
@@ -750,6 +486,7 @@ Runtime interfaces include
 
 - `$string`
 - `$number`
+- `$int`
 - `$boolean`
 - `$array([])`
 - `$record()`
@@ -781,7 +518,7 @@ console.log(
   match(101)
     .with_($even, _ => `number is even`),
     .with_($odd, _ => `number is odd`)
-    .done()
+    .otherwise(_ => 'unable to match')
 ) // number is odd
 
 ```
@@ -811,8 +548,8 @@ fetch('https://jsonplaceholder.typicode.com/todos/1')
   .then(json =>
     match(json)
       .with_($validJson, json => console.log(`yay - ${ json.title }`))
-      .with_($unknown, a => console.log(`Unexpected JSON response from API`))
-      .done()
+      .otherwise(_ => console.log(`Unexpected JSON response from API`))
+
   )
 
 ```
@@ -824,7 +561,7 @@ Pattern matching becomes more powerful when used to drive type-cirtainty.
 The return value of pattern matching is often a `union` type or just plain `unknown`.
 
 Instead we can drive type-cirtainty by not returning a response to a variable at all.
-Instead we call a action passing in the value of cirtain-type from the inferred match.
+Instead we call a function passing in the value of cirtain-type from the inferred match.
 
 In the below `personAction` only fires if `bob` matches `$person` so if `personAction` runs at all, then it is with type-cirtainty.
 
@@ -846,8 +583,7 @@ const personAction = (person: Person) => {
 fetchPerson(123).then(
   person => match(person)
     .with_($person, personAction /* this only runs if a match occurs */)
-    .with_($nothing, _ => console.log('not a person'))
-    .done()
+    .otherwise(_ => console.log('not a person'))
 )
 
 ```
@@ -857,22 +593,20 @@ fetchPerson(123).then(
 - Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
 - Data is piped through functions to create complex data transformations.
 - Pure Functions take in data, and return new data without mutating the input or any other variables
-- Pure Actions 'do something' as well as return a value. When dealing with impure values, Pure Actions call new instances of Child Actions (AKA Handlers) and pass impure values as inputs. They do this instead of returning an impure value inside a pure function which would otherwise pollute the pure function.
-- By combining Pure Actions and Pattern Matching, Type Certainty can be achieved making code extremely predictable and safe.
 
 ## Prelude API
 
 ### pattern match api
 
-**class** `PatternMatch`
+**class** `Match`
 
-**methods of `PatternMatch`**
+**methods of `Match`**
 
 `of`
 
-_Creates a PatternMatch chain. Usually `match` is used instead._
+_Creates a Match chain. Usually `match` is used instead._
 
-Eg. `PatternMatch.of('cat')`
+Eg. `Match.of('cat')`
 
 `with_`
 
@@ -906,6 +640,7 @@ _Used in place of `PatternMatch.of`_
 - $literal
 - $nothing
 - $number
+- $int
 - $record
 - $union
 - $unknown
