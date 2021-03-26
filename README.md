@@ -22,7 +22,44 @@ We recommend typescript for the type-safety that it gives.
 The Lean Rule
 ===============
 
-- Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
+Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
+
+```typescript
+
+// Lean separates effects from pure-functions, allowing logic and effect modelling to be tested in a completely pure way.
+
+// effects are abstracted from their primitive effects, for possible extensions
+const rnd = Math.random
+const log = console.log
+
+// pure-functions are used to process passed in value-producers and other data
+type abc = [ () => number, () => number, (...data: any[]) => void | LogEffect]
+const main = ([a, b, c]: abc) => c(a() + b())
+
+// effects are passed in unprocessed, and piped forward into pure functions
+pipe([rnd, rnd, log] as abc)
+  .pipe(main)
+
+// For testing, effects can be modelled...
+
+type LogEffect = ["Log", number]
+
+const testLog = (...data: any[]) => {
+  const dataOut = data[0] as number
+  return ["Log", dataOut] as LogEffect
+}
+
+const test = (a: void | LogEffect) => {
+  a = a as LogEffect
+  console.log(`test: expect main to log 1 |> ${a[0] === "Log" && a[1] === 1 }`)
+} 
+
+// The pure-function can now be tested using predictable value-producers and interceptors
+pipe([() => 0.3, () => 0.7, testLog] as abc)
+  .pipe(main)
+  .pipe(test)
+  
+```
 
 Pure Functions
 ==============
