@@ -68,7 +68,7 @@ Pure Functions are the building blocks of any functional programming. Pure Funct
 
 This therefore enforces data that is immutable.
 
-Like Pure Actions, whenever they are passed the same set of inputs - they always return the same output.
+Whenever they are passed the same set of inputs - they always return the same output.
   
 **Single argument functions are known as unary functions**
 
