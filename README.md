@@ -245,7 +245,7 @@ Type Lifting
 
 In Javascript automatic Type Lifting occurs for most value types, for example:
 
-```
+```typescript
 
 // 10 is a value with type of number
 10
@@ -264,7 +264,7 @@ pipe(10)
 
 Automatic Type Lifting also occurs on arrays...
 
-```
+```typescript
 // [1,2,3] is an array of numbers
 [1,2,3]
 
