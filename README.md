@@ -1,13 +1,13 @@
 # A guide to Lean Functional Typescript
 
-Lean is a Pure Functional way of writing Typescript applications.
+Lean is a Functional way of writing Typescript applications, based on the ML family of languages.
 
-It achieves purity through the the use of Pure Functions and Abstracted Effects.
+It provides a **lean** way of writing safer code without the complexity of some other functional languages.
 
 Install
 =======
 
-While Lean is more conceptual than anything else, the Lean Prelude provides utilities such as **pattern matching**, **piping**, and **flows**.
+The Lean Prelude provides utilities such as **pattern matching**, **piping**, and **flows**.
 
 To get going with Lean, download the **prelude**
 
@@ -19,47 +19,6 @@ It works with both javascript and typescript...
 
 We recommend typescript for the type-safety that it gives.
 
-The Lean Rule
-===============
-
-Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
-
-```typescript
-
-// Lean separates effects from pure-functions, allowing logic and effect modelling to be tested in a completely pure way.
-
-// effects are abstracted from their primitive effects, for possible extensions
-const rnd = Math.random
-const log = console.log
-
-// pure-functions are used to process passed in value-producers and other data
-type abc = [ () => number, () => number, (...data: any[]) => void | LogEffect]
-const main = ([a, b, c]: abc) => c(a() + b())
-
-// effects are passed in unprocessed, and piped forward into pure functions
-pipe([rnd, rnd, log] as abc)
-  .pipe(main)
-
-// For testing, effects can be modelled...
-
-type LogEffect = ["Log", number]
-
-const testLog = (...data: any[]) => {
-  const dataOut = data[0] as number
-  return ["Log", dataOut] as LogEffect
-}
-
-const test = (a: void | LogEffect) => {
-  a = a as LogEffect
-  console.log(`test: expect main to log 1 |> ${a[0] === "Log" && a[1] === 1 }`)
-} 
-
-// The pure-function can now be tested using predictable value-producers and interceptors
-pipe([() => 0.3, () => 0.7, testLog] as abc)
-  .pipe(main)
-  .pipe(test)
-  
-```
 
 Pure Functions
 ==============
@@ -278,6 +237,56 @@ pipe(myRecord)
 ```
 
 > Note that `Record` and `Array_` are provided in the Prelude.
+
+Type Lifting
+============
+
+"Type lifting" is when a normal value without methods is 'lifted' to a more powerful version that has methods associated with it.
+
+In Javascript automatic Type Lifting occurs for most value types, for example:
+
+```
+
+// 10 is a value with type of number
+10
+
+// 10 is also lifted to being an instance of Number which grants it methods.
+(10).toString()
+
+// 10 can also utilise the Number static methods...
+Number.isInteger(10) // true
+// or
+pipe(10)
+  .pipe(Number.isInteger)
+  .done()
+
+```
+
+Automatic Type Lifting also occurs on arrays...
+
+```
+// [1,2,3] is an array of numbers
+[1,2,3]
+
+
+// [1,2,3] is also lifted to being an instance of Array which grants it methods.
+[1,2,3]
+  .map(x => x +1)
+  .filter(x => x > 1)
+
+```
+
+In Lean we sparingly use Type Lifting, and tend to use piping for most things instead. This lets functions / static methods do the heavy lifting, rather than having to write classes representing Lifted Types that contain methods that are only usable in that given class.
+
+In saying that, `pipe` is a lifted type that grants values the `pipe` method - so obviously they can be very useful ;)
+
+And as you can see above, `[1,2,3].map(x => x +1).filter(x => x > 1)` is nice and succinct and still functional.
+
+Mutables
+========
+
+In Js / Ts there is (unfortunately) no shortage to writing mutable code.
+However, in functional code - mutating code is used very sparingly, and instead immutable patterns (like Pure-functions) are greatly encouraged.
 
 Async
 =====
@@ -624,14 +633,59 @@ fetchPerson(123).then(
 )
 
 ```
-## Conclusion
+
+Using Lean to model effects in unit tests
+==========================================
+
+Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
+
+```typescript
+
+// Lean separates effects from pure-functions, allowing logic and effect modelling to be tested in a completely pure way.
+
+// effects are abstracted from their primitive effects, for possible extensions
+const rnd = Math.random
+const log = console.log
+
+// pure-functions are used to process passed in value-producers and other data
+type abc = [ () => number, () => number, (...data: any[]) => void | LogEffect]
+const main = ([a, b, c]: abc) => c(a() + b())
+
+// effects are passed in unprocessed, and piped forward into pure functions
+pipe([rnd, rnd, log] as abc)
+  .pipe(main)
+
+// For testing, effects can be modelled...
+
+type LogEffect = ["Log", number]
+
+const testLog = (...data: any[]) => {
+  const dataOut = data[0] as number
+  return ["Log", dataOut] as LogEffect
+}
+
+const test = (a: void | LogEffect) => {
+  a = a as LogEffect
+  console.log(`test: expect main to log 1 |> ${a[0] === "Log" && a[1] === 1 }`)
+} 
+
+// The pure-function can now be tested using predictable value-producers and interceptors
+pipe([() => 0.3, () => 0.7, testLog] as abc)
+  .pipe(main)
+  .pipe(test)
+  
+```
+
+Conclusion
+==========
 
 - Lean focusses on data.
 - Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
 - Data is piped through functions to create complex data transformations.
 - Pure Functions take in data, and return new data without mutating the input or any other variables
 
-## Prelude API
+Prelude API
+===========
 
 ### pattern match api
 
@@ -745,6 +799,8 @@ _Logs the previous value in a pipe or flow, and then passes that value to the ne
 **function** `mutable`
 
 See docs above
+
+### Js / Ts Helpers
 
 **function** clone
 
