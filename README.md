@@ -288,6 +288,27 @@ Mutables
 In Js / Ts there is (unfortunately) no shortage to writing mutable code.
 However, in functional code - mutating code is used very sparingly, and instead immutable patterns (like Pure-functions) are greatly encouraged.
 
+Lean also provides the `mutable` function which is a safer utility for managing mutability. It ensures that a value that has been brought into scope does not change unexpectedly.
+
+```typescript
+
+const [unwrapThing, mutateThing] = mutable(100)
+
+unwrapThing(v => {
+  // v is 100
+  console.log(v) // 100
+  mutateThing(m => m + 1)
+  console.log(v) // The currently unwrapped value is still 100 so that there is no change to values in the existing scope.
+  // To get the newly mutated value - the value needs to be explicitly unwrapped again.
+  unwrapThing(v => {
+    console.log(v) // 101
+  })
+})
+
+
+```
+
+
 Async
 =====
 
@@ -381,7 +402,97 @@ Pattern Matching
 
 In functional languages like F# most if / then / else style logic is handled through Pattern Matching.
 
-Lean also provides pattern matching.
+Lean provides two types of pattern matching.
+
+## 1. Variants
+
+In file called something like encodings.ts put the following code...
+
+```typescript
+
+type Encodings = {
+  Person: Person
+  None: None
+  Cat: Cat
+}
+
+type Encoded<K extends keyof Encodings> = {
+  encodedAs: K,
+  contents: Encodings[K],
+}
+
+const encode = <K extends keyof Encodings>(a: Encodings[K], k: K): Encoded<K> => ({
+  encodedAs: k,
+  contents: a as Encodings[K]
+})
+
+let decode = <K extends keyof Encodings>(e: Encoded<K>) => e.contents
+
+```
+
+This provides the basis for encoding and decoding values.
+An encoded value is tagged with an `encodedAs` property that can be used to match on, for easy decoding in a switch statement.
+
+Eg.
+
+```typescript
+
+// Add types to Encodings, to make encode / decode aware of the mapping...
+
+type Person = {
+  firstName: string,
+  lastName: string
+}
+
+type Cat = { furry: true }
+
+type None = undefined
+
+type Encodings = {
+  Person: Person
+  None: None
+  Cat: Cat
+}
+
+...
+
+type Encodings = {
+  Person: Person
+  None: None
+  Cat: Cat
+}
+
+```
+
+When there are multiple Encoded Possibilities, these are referred to as Variants
+
+```typescript
+
+let p = encode({ firstName: "jim", lastName: "bob"}, "Person") // Encodes the object under the key of Person
+                                                               // The mapping must exist and be correct in the Encodings Map
+
+const o = decode(p)                                            // Which can be decoded
+
+// When there are multiple Encoded Possibilities, these are referred to as Variants
+
+let variant = p as unknown as Encoded<'Person'> | Encoded<'Cat'> // Variants occur
+
+// By switching on `encodedAs` it makes it easy to match and decode the actual value...
+
+const check = () => {
+  switch (variant.encodedAs) {
+    case "Person": return console.log(decode(variant).firstName)
+    case "Cat": return console.log(decode(variant).furry)
+    default: () => console.log("No Match")
+  }
+}
+
+check()
+
+```
+
+## 2. Structural Pattern Matching
+
 
 Here it's possible to create a type that can be matched against at run-time, and based on that match, trigger a function.
 
