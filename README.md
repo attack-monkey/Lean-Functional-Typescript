@@ -402,97 +402,7 @@ Pattern Matching
 
 In functional languages like F# most if / then / else style logic is handled through Pattern Matching.
 
-Lean provides two types of pattern matching.
-
-## 1. Variants
-
-In file called something like encodings.ts put the following code...
-
-```typescript
-
-type Encodings = {
-  Person: Person
-  None: None
-  Cat: Cat
-}
-
-type Encoded<K extends keyof Encodings> = {
-  encodedAs: K,
-  contents: Encodings[K],
-}
-
-const encode = <K extends keyof Encodings>(a: Encodings[K], k: K): Encoded<K> => ({
-  encodedAs: k,
-  contents: a as Encodings[K]
-})
-
-let decode = <K extends keyof Encodings>(e: Encoded<K>) => e.contents
-
-```
-
-This provides the basis for encoding and decoding values.
-An encoded value is tagged with an `encodedAs` property that can be used to match on, for easy decoding in a switch statement.
-
-Eg.
-
-```typescript
-
-// Add types to Encodings, to make encode / decode aware of the mapping...
-
-type Person = {
-  firstName: string,
-  lastName: string
-}
-
-type Cat = { furry: true }
-
-type None = undefined
-
-type Encodings = {
-  Person: Person
-  None: None
-  Cat: Cat
-}
-
-...
-
-type Encodings = {
-  Person: Person
-  None: None
-  Cat: Cat
-}
-
-```
-
-When there are multiple Encoded Possibilities, these are referred to as Variants
-
-```typescript
-
-let p = encode({ firstName: "jim", lastName: "bob"}, "Person") // Encodes the object under the key of Person
-                                                               // The mapping must exist and be correct in the Encodings Map
-
-const o = decode(p)                                            // Which can be decoded
-
-// When there are multiple Encoded Possibilities, these are referred to as Variants
-
-let variant = p as unknown as Encoded<'Person'> | Encoded<'Cat'> // Variants occur
-
-// By switching on `encodedAs` it makes it easy to match and decode the actual value...
-
-const check = () => {
-  switch (variant.encodedAs) {
-    case "Person": return console.log(decode(variant).firstName)
-    case "Cat": return console.log(decode(variant).furry)
-    default: () => console.log("No Match")
-  }
-}
-
-check()
-
-```
-
-## 2. Structural Pattern Matching
-
+Lean provides powerful pattern matching, both with structural matches and matching on variants.
 
 Here it's possible to create a type that can be matched against at run-time, and based on that match, trigger a function.
 
@@ -745,8 +655,57 @@ fetchPerson(123).then(
 
 ```
 
+Matching using Variants
+=======================
+
+Variants allow types to be encoded in a lightweight way so that later in the program, they can be matched without having to use the heavy processing of structural pattern matching.
+
+Here we use structural matching to first determine the type of JSON being passed to us, but we then encode it for easy matching later...
+
+```typescript
+
+// The Runtime Interface of Valid JSON
+const $validJson = {
+  userId: $number,
+  id: $number,
+  title: $string,
+  completed: $boolean
+}
+
+// An Option that holds types for Invalid and Invalid JSON
+type OptionJson = {
+  "Some": typeof $validJson
+  "None": undefined
+}
+
+fetch('https://jsonplaceholder.typicode.com/todos/1')
+  .then(response => response.json())
+  .then(processJson)
+
+function processJson(unknownJson: unknown) {
+  // We can apply structural matching on the JSON to validate it and then encode it as
+  // Some: the json is valid
+  // None: the json is not valid
+  let optionJson = match<unknown, Encoded<OptionJson, any>>(unknownJson)
+      .with_($validJson, json => encode<OptionJson, "Some">(json, "Some"))
+      .otherwise(_ => encode<OptionJson, "None">(undefined, "None"))
+
+  // later we can match on optionJson, but instead of having to structurally match we can just match on the encoding - which is light-weight
+  match(optionJson)
+    .withEncoded<OptionJson, "Some">("Some", json => console.log(`the json is valid ... ${json.title}`))
+    .withEncoded<OptionJson, "None">("None", _ => console.log(`the json is not valid`))
+    .otherwise(() => console.log(`Again, the json is not valid`))
+}
+
+```
+
 Using Lean to model effects in unit tests
 ==========================================
+
+This is an example of how to abstract Effects away from Pure-functions, allowing for Pure Functional Programming.
+This allows powerful and simple ways to be able to model effects to determine:
+1. What effects are called when
+2. What values are passed to effects
 
 Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
 
