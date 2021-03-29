@@ -285,10 +285,10 @@ And as you can see above, `[1,2,3].map(x => x +1).filter(x => x > 1)` is nice an
 Mutables
 ========
 
-In Js / Ts there is (unfortunately) no shortage to writing mutable code.
+In Js / Ts there is (unfortunately) no shortage of ways to write mutable code.
 However, in functional code - mutating code is used very sparingly, and instead immutable patterns (like Pure-functions) are greatly encouraged.
 
-Lean also provides the `mutable` function which is a safer utility for managing mutability. It ensures that a value that has been brought into scope does not change unexpectedly.
+Lean provides the `mutable` function which is a safer utility for managing mutability. It ensures that a value that has been brought into scope does not change unexpectedly. It does so by abstracting away the persistance of a value from the otherwise Pure Program.
 
 ```typescript
 
@@ -305,6 +305,23 @@ unwrapThing(v => {
   })
 })
 
+```
+
+If you do have to mutate a value in a normal Js / Ts way and that value is an object / array - then take caution:
+
+Object properties are just references to underlying values, and when you edit an object - you actually update the underlyng value that the Object property points to. That means that when you copy an Object, you just create a reference Object to the same underlying values. Update a property on one Object and you've just updated the same property on the other Object.
+
+Lean provides the `clone` utility that deep clones an Object to create a completely new Object.
+
+```typescript
+
+const a = {
+  prop1: "hello world"
+}
+
+const b = clone(a)
+b.prop1 = "goodbye world"
+console.log(a.prop1) // "hello world" <- Yay, we didn't mutate a when mutating b
 
 ```
 
