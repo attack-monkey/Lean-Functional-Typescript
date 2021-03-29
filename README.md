@@ -798,6 +798,20 @@ match('cat')
 
 _Provides a matching arm, with the thing to match against and a function to call, should the match occur..._
 
+
+`withEncoded`
+
+```typescript
+
+match(encodedCat)
+  .withEncoded<Animals, "Cat">("Cat", cat => console.log(`The cat says ${ cat.meow }`))
+  .done()
+  
+```
+
+_Provides a matching arm on an Encoded Value (Variant)_
+
+
 `done`
 
 _Executes the patternMatch. `done` must be called at the end of the chain, in order for the matching to execute._
