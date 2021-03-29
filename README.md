@@ -7,7 +7,7 @@ It provides a **lean** way of writing safer code without the complexity of some 
 Install
 =======
 
-The Lean Prelude provides utilities such as **pattern matching**, **piping**, and **flows**.
+The Lean Prelude provides utilities such as **pattern matching** and **piping**.
 
 To get going with Lean, download the **prelude**
 
@@ -380,38 +380,6 @@ Promise.all([
   promise2
 ]).then(handler)
 
-```
-
-Flows
-==============
-
-Flows are another way of running asynchronous action.
-`flow` works much like `pipe` but allows both sync and async functions.
-
-```typescript
-
-flow(10)
-  .pipe(v => v + 10)
-  .pipe(logAndThrough) // logs the current value and then passes the value to the next handler.
-  .pipe(v => v + 20)
-  .then(wait(1000)) // This step is blocks the flow for one second
-  .pipe(logAndThrough)
-  
-```
-
-**Creating an Async step in the flow**
-
-```typescript
-
-flow(10)
-  .pipe(v => v + 10)
-  .then((val, resolve) => {
-    // Example of how to write an async function.
-    // The flow won't continue until resolve is called, and that won't happen until the timeout is reached.
-    setTimeout(() => resolve(val + 90), 1000)
-  }) // This step is blocks the flow for one second
-  .pipe(logAndThrough)
-  
 ```
 
 Pattern Matching
@@ -860,40 +828,6 @@ _Returns the final value._
 **function** `pipe`
 
 _Used in place of `Pipe.of`_
-
-### flow
-
-**class** `Flow`
-
-**methods of `Flow`**
-
-`of`
-
-_Creates a Flowable value. `flow` is usually used instead._
-
-`pipe`
-
-_pipes the previous result into a new function_
-
-`then`
-
-_pipes the previous result into a **potentially asynchronous** new function_
-
-**function** `flow`
-
-_Used in place of `Flow.of`_
-
-#### flow helpers
-
-**function** `wait`
-
-_waits a period of time before passing the previous value in a flow to the next step_
-
-Eg. `flow(10).then(wait(1000)).pipe(ten => console.log(ten))`
-
-**function** `logAndThrough`
-
-_Logs the previous value in a pipe or flow, and then passes that value to the next step_
 
 ### mutable
 
