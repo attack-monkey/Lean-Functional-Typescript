@@ -677,7 +677,7 @@ function processJson(unknownJson: unknown) {
   // We can apply structural matching on the JSON to validate it and then encode it as
   // Some: the json is valid
   // None: the json is not valid
-  let optionJson = match(unknownJson)
+  let optionJson = match<unknown, Encoded<OptionJson, any>>(unknownJson)
       .with_($validJson, json => encode<OptionJson, "Some">(json, "Some"))
       .otherwise(_ => encode<OptionJson, "None">(undefined, "None"))
 
