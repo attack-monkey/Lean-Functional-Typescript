@@ -549,6 +549,7 @@ Runtime interfaces include
 - `$gt`
 - `$lte`
 - `$gte`
+- `$encoded` <- Use this to match on variants - eg. Option, Some, None
 
 ## Roll your own Runtime Interfaces
 
@@ -744,10 +745,12 @@ pipe([() => 0.3, () => 0.7, testLog] as abc)
 Conclusion
 ==========
 
+- Lean is heavily based on the ML family of languages but is idiomatic to Js / Ts.
 - Lean focusses on data.
 - Data has a particular type, and in order to be passed into a function, the type needs to match the call signature of the function.
-- Data is piped through functions to create complex data transformations.
-- Pure Functions take in data, and return new data without mutating the input or any other variables
+- Data is piped through functions to create data transformations.
+- Pure Functions take in data, and return new data without mutating the input or any other variables.
+- Pattern Matching is used in place of if / else / switch for more powerful and simpler logic handling.
 
 Prelude API
 ===========
@@ -776,20 +779,6 @@ match('cat')
 
 _Provides a matching arm, with the thing to match against and a function to call, should the match occur..._
 
-
-`withEncoded`
-
-```typescript
-
-match(encodedCat)
-  .withEncoded<Animals, "Cat">("Cat", cat => console.log(`The cat says ${ cat.meow }`))
-  .done()
-  
-```
-
-_Provides a matching arm on an Encoded Value (Variant)_
-
-
 `done`
 
 _Executes the patternMatch. `done` must be called at the end of the chain, in order for the matching to execute._
@@ -814,6 +803,7 @@ _Used in place of `PatternMatch.of`_
 - $record
 - $union
 - $unknown
+- $encoded
 
 ### pipe
 
