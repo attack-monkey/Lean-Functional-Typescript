@@ -663,9 +663,14 @@ type OptionJson = {
   "None": undefined
 }
 
-fetch('https://jsonplaceholder.typicode.com/todos/1')
-  .then(response => response.json())
-  .then(processJson)
+// Emulating some json and passing to processJson
+pipe({
+  title: "asldj",
+  id: 6,
+  userId: 234,
+  completed: true
+})
+  .pipe(processJson)
 
 function processJson(unknownJson: unknown) {
   // We can apply structural matching on the JSON to validate it and then encode it as
@@ -675,11 +680,16 @@ function processJson(unknownJson: unknown) {
       .with_($validJson, json => encode<OptionJson, "Some">(json, "Some"))
       .otherwise(_ => encode<OptionJson, "None">(undefined, "None"))
 
-  // later we can match on optionJson, but instead of having to structurally match we can just match on the encoding - which is light-weight
+  // Later we can match on optionJson which has been encoded with either Some or None.
+  // Rather than having to match each and every node of the JSON, it just matches on the encoding, which is very light-weight.
+
+  const $someJson = $encoded<OptionJson, "Some">("Some")
+  const $noneJson = $encoded<OptionJson, "None">("None")
+  
   match(optionJson)
-    .withEncoded<OptionJson, "Some">("Some", json => console.log(`the json is valid ... ${json.title}`))
-    .withEncoded<OptionJson, "None">("None", _ => console.log(`the json is not valid`))
-    .otherwise(() => console.log(`Again, the json is not valid`))
+    .with_($someJson, encoded => pipe(decode(encoded)).pipe(({ title }) => console.log(`Here's the title of the matched json: ${title}`)) )
+    .with_($noneJson, () => console.log("No match"))
+    .otherwise(() => console.log("No match"))
 }
 
 ```
