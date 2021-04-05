@@ -644,103 +644,12 @@ fetchPerson(123).then(
 Matching using Variants
 =======================
 
-Variants allow types to be encoded in a lightweight way so that later in the program, they can be matched without having to use the heavy processing of structural pattern matching.
-
-Here we use structural matching to first determine the type of JSON being passed to us, but we then encode it for easy matching later...
-
-```typescript
-
-// The Runtime Interface of Valid JSON
-const $validJson = {
-  userId: $number,
-  id: $number,
-  title: $string,
-  completed: $boolean
-}
-
-// An Option that holds types for Invalid and Invalid JSON
-type OptionJson = {
-  "Some": typeof $validJson
-  "None": undefined
-}
-
-// Emulating some json and passing to processJson
-pipe({
-  title: "asldj",
-  id: 6,
-  userId: 234,
-  completed: true
-})
-  .pipe(processJson)
-
-function processJson(unknownJson: unknown) {
-  // We can apply structural matching on the JSON to validate it and then encode it as
-  // Some: the json is valid
-  // None: the json is not valid
-  let optionJson = match<unknown, Encoded<OptionJson, any>>(unknownJson)
-      .with_($validJson, json => encode<OptionJson, "Some">(json, "Some"))
-      .otherwise(_ => encode<OptionJson, "None">(undefined, "None"))
-
-  // Later we can match on optionJson which has been encoded with either Some or None.
-  // Rather than having to match each and every node of the JSON, it just matches on the encoding, which is very light-weight.
-
-  const $someJson = $encoded<OptionJson, "Some">("Some")
-  const $noneJson = $encoded<OptionJson, "None">("None")
-  
-  match(optionJson)
-    .with_($someJson, encoded => pipe(decode(encoded)).pipe(({ title }) => console.log(`Here's the title of the matched json: ${title}`)) )
-    .with_($noneJson, () => console.log("No match"))
-    .otherwise(() => console.log("No match"))
-}
-
-```
+Coming Soon
 
 Using Lean to model effects in unit tests
 ==========================================
 
-This is an example of how to abstract Effects away from Pure-functions, allowing for Pure Functional Programming.
-This allows powerful and simple ways to be able to model effects to determine:
-1. What effects are called when
-2. What values are passed to effects
-
-Effects should be piped into pure-functions in an unprocessed state, so that pure-functions can manage any impurities in a pure way.
-
-```typescript
-
-// Lean separates effects from pure-functions, allowing logic and effect modelling to be tested in a completely pure way.
-
-// effects are abstracted from their primitive effects, for possible extensions
-const rnd = Math.random
-const log = console.log
-
-// pure-functions are used to process passed in value-producers and other data
-type abc = [ () => number, () => number, (...data: any[]) => void | LogEffect]
-const main = ([a, b, c]: abc) => c(a() + b())
-
-// effects are passed in unprocessed, and piped forward into pure functions
-pipe([rnd, rnd, log] as abc)
-  .pipe(main)
-
-// For testing, effects can be modelled...
-
-type LogEffect = ["Log", number]
-
-const testLog = (...data: any[]) => {
-  const dataOut = data[0] as number
-  return ["Log", dataOut] as LogEffect
-}
-
-const test = (a: void | LogEffect) => {
-  a = a as LogEffect
-  console.log(`test: expect main to log 1 |> ${a[0] === "Log" && a[1] === 1 }`)
-} 
-
-// The pure-function can now be tested using predictable value-producers and interceptors
-pipe([() => 0.3, () => 0.7, testLog] as abc)
-  .pipe(main)
-  .pipe(test)
-  
-```
+Coming Soon
 
 Conclusion
 ==========
