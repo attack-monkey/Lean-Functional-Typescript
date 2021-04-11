@@ -369,9 +369,7 @@ function handler (a_json) {
 Parallels
 ==============
 
-Since `mutable` restricts multiple actions spawning at once, we need another type of action that is better equipped to handle the spawning of multiple actions, collecting their results and converging back to a single action.
-
-`Promise.all` provides a standard way of doing this...
+`Promise.all` provides a standard way of processing multiple promises at once...
 
 ```typescript
 
