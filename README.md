@@ -644,12 +644,42 @@ fetchPerson(123).then(
 Matching using Variants
 =======================
 
-Coming Soon
+Variants are a way of encoding values that may be one of many types. Unlike the structural pattern matching used above, variants provide a light-weight way of passing around uncertainty, and then being able to match and unwrap a definite type later.
 
-Using Lean to model effects in unit tests
-==========================================
+To create a variant...
 
-Coming Soon
+```typescript
+
+// Create base types that encode values
+type Some<A> = { t: "Some", v: A }
+type None = {t: "None", v: undefined }
+
+// Create the variant type
+type Option<A> = Some<A> | None
+
+// Create constructors that return the variant type
+const Some = <A>(a: A): Option<A> => ({
+    t: "Some",
+    v: a
+})
+
+const None = (a: any): Option<any> => ({
+    t: "None",
+    v: undefined
+})
+
+// Values can now be encoded as a variant
+const cat = Some("cat")
+
+// Now the variant can be handled by switching on the type (t).
+// Each case knows that since the type (t) is defined, the type of the value (v) is known. 
+switch (cat.t) {
+    case "Some": console.log(`hello ${cat.v}!!`); break;
+    case "None": console.log(":("); break;
+    default: console.log(":("); break;
+}
+
+```
 
 Conclusion
 ==========
