@@ -4,6 +4,8 @@ Lean is a Functional way of writing Typescript applications, based on the ML fam
 
 It provides a **lean** way of writing safer code without the complexity of some other functional languages.
 
+It differs from say fp.ts which has aligns many haskell-like features to Typescript, but at the cost of complexity.
+
 Install
 =======
 
