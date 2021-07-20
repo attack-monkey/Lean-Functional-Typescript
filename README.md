@@ -295,7 +295,7 @@ And as you can see above, `[1,2,3].map(x => x +1).filter(x => x > 1)` is nice an
 Type Lifting and other fp libraries
 ===================================
 
-Type Lifting essentiallu uses object-oriented programming to provide Lifted Types. It opens up a world of libraries such as:
+Type Lifting essentially uses object-oriented programming to provide Lifted Types. It opens up a world of libraries such as:
 - Immutable.js for Immutable Data Structures
 - Rxjs for Asynchronous Functional Programming (Reactive Programming)
 - Fp.ts for a more Haskell-like fp experience.
