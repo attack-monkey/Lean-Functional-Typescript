@@ -111,29 +111,13 @@ const seven = add3(4)
 
 const add = (a: number) => (b: number) => a + b
 
-const seven = pipe(4).pipe(add(3))
+const seven = pipe(4).pipe(add(3)).done()
 
 ```
 
 **Partials also provide a simple, powerful way of doing Dependency Injection**
 
-```typescript
-
-type LoggingTool = (a: any) => void
-
-const simpleLog: LoggingTool = a => console.log(a)
-
-const logInitialiser = (loggingTool: LoggingTool) => (a: any) => loggingTool(a)
-
-// Set up our logging tool...
-
-const log = logInitialiser(simpleLog)
-
-// Now we can log
-
-log('hello world')
-
-// In production, we may swap out simpleLog for something more sophisticated - but we don't need to change our log statements.
+See: https://github.com/attack-monkey/Lean-Functional-Typescript/blob/main/Dependency-Injection.md
 
 
 ```
@@ -154,24 +138,7 @@ const a = myFunction(10, 10) // 20
 
 ```typescript
 
-const showCat = (options: { isFluffy: boolean, likesToScratch: boolean, likesIceCream: boolean }) =>
-    console.log(
-        `This kitty ${
-            isFluffy
-                ? 'is fluffy, and' 
-                : ''
-            } ${
-                likesToScratch
-                    ? ' likes to scratch, and' 
-                    : ''
-            } ${
-                likesIceCream
-                    ? ' likes ice-cream'
-                    : ' that\'s all'
-            }`
-    )
-    
-showCat({ isFluffy: true }) // This kitty is fluffy, and that's all
+const showCat = (options: { isFluffy: boolean, likesToScratch: boolean, likesIceCream: boolean }) => { ... }
 
 ```
 
@@ -298,32 +265,29 @@ In saying that, `pipe` is a lifted type that grants values the `pipe` method - s
 
 And as you can see above, `[1,2,3].map(x => x +1).filter(x => x > 1)` is nice and succinct and still functional.
 
+Type Lifting and other fp libraries
+===================================
+
+Type Lifting essentiallu uses object-oriented programming to provide Lifted Types. It opens up a world of libraries such as:
+- Immutable.js for Immutable Data Structures
+- Rxjs for Asynchronous Functional Programming (Reactive Programming)
+- Fp.ts for a more Haskell-like fp experience.
+
 Mutables
 ========
 
-In Js / Ts there is (unfortunately) no shortage of ways to write mutable code.
-However, in functional code - mutating code is used very sparingly, and instead immutable patterns (like Pure-functions) are greatly encouraged.
+In Js / Ts there are no shortage of ways to write mutable code.
+In fp - mutating code is used very sparingly, and instead immutable patterns (like Pure-functions) are greatly encouraged.
 
-Lean provides the `mutable` function which is a safer utility for managing mutability. It ensures that a value that has been brought into scope does not change unexpectedly. It does so by abstracting away the persistance of a value from the otherwise Pure Program.
+Lean provides some safer utilities for managing mutability than the out-of-the-box approach.
 
-```typescript
+`mutable`: is a part of the Lean prelude, and a safer utility than the out-of-the-box variable mutation - https://github.com/attack-monkey/Lean-Functional-Typescript/blob/main/Mutable.md
 
-const [unwrapThing, mutateThing] = mutable(100)
 
-unwrapThing(v => {
-  // v is 100
-  console.log(v) // 100
-  mutateThing(m => m + 1)
-  console.log(v) // The currently unwrapped value is still 100 so that there is no change to values in the existing scope.
-  // To get the newly mutated value - the value needs to be explicitly unwrapped again.
-  unwrapThing(v => {
-    console.log(v) // 101
-  })
-})
+Mutating Objects
+================
 
-```
-
-If you do have to mutate a value in a normal Js / Ts way and that value is an object / array - then take caution:
+If you do have to mutate values in a normal Js / Ts way and that value is an object / array - then take **caution**:
 
 Object properties are just references to underlying values, and when you edit an object - you actually update the underlyng value that the Object property points to. That means that when you copy an Object, you just create a reference Object to the same underlying values. Update a property on one Object and you've just updated the same property on the other Object.
 
@@ -359,25 +323,14 @@ fetch('https://jsonplaceholder.typicode.com/todos/1')
 
 Infact Promises can be thought of as `pipe` for asynchronous operations.
 
-Javascript and Typescript also provide async / await for handling asynchronicity, however this ends up introducing impurity into the code.
+Javascript and Typescript also provide async / await for handling asynchronicity.
 
 ```typescript
 
 const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
-const b = a.json() // This introduces an impure value to b, since we can't be sure what it is.
-handler(b) // handler can still be pure - but the surrounding scope here has been polluted.
-
-```
-
-But b never really has to come into scope, and instead `a.json()` can be passed directly to the `handler`.
-
-
-```typescript
-
-const a = await fetch('https://jsonplaceholder.typicode.com/todos/1')
-handler(a.json()) // `a.json()` is passed directly to the handler and isn't an accessible value in this scope.
+handler(a.json())
 function handler (a_json) {
-  // a_json comes into scope as a known value
+  ...
 }
 
 ```
@@ -399,9 +352,55 @@ Promise.all([
 Pattern Matching
 ================
 
-In functional languages like F# most if / then / else style logic is handled through Pattern Matching.
+In ML based functional languages like F#, ReScript, etc. most if / then / else style logic is handled through Pattern Matching.
 
 Lean provides powerful pattern matching, both with structural matches and matching on variants.
+
+Matching using Variants
+=======================
+
+Variants are a way of encoding values that may be one of many types. Unlike the structural pattern matching used above, variants provide a light-weight way of passing around uncertainty, and then being able to match and unwrap a definite type later.
+
+Here we create a variant called Option.
+
+Option is a classic fp way of managing whether something is what we think it is or something else.
+
+
+```typescript
+
+// Create base types that encode values
+type Some<A> = { t: "Some", v: A }
+type None = {t: "None", v: undefined }
+
+// Create the variant type
+type Option<A> = Some<A> | None
+
+// Create constructors that return the variant type
+const Some = <A>(a: A): Option<A> => ({
+    t: "Some",
+    v: a
+})
+
+const None = (a: any): Option<any> => ({
+    t: "None",
+    v: undefined
+})
+
+// Values can now be encoded as a variant
+const cat = Some("cat")
+
+// Now the variant can be handled by switching on the type (t).
+// Each case knows that since the type (t) is defined, the type of the value (v) is known. 
+switch (cat.t) {
+    case "Some": console.log(`hello ${cat.v}!!`); break;
+    case "None": console.log(":("); break;
+    default: console.log(":("); break;
+}
+
+```
+
+Structural Pattern Matching
+===========================
 
 Here it's possible to create a type that can be matched against at run-time, and based on that match, trigger a function.
 
@@ -652,46 +651,6 @@ fetchPerson(123).then(
     .with_($person, personAction /* this only runs if a match occurs */)
     .otherwise(_ => console.log('not a person'))
 )
-
-```
-
-Matching using Variants
-=======================
-
-Variants are a way of encoding values that may be one of many types. Unlike the structural pattern matching used above, variants provide a light-weight way of passing around uncertainty, and then being able to match and unwrap a definite type later.
-
-To create a variant...
-
-```typescript
-
-// Create base types that encode values
-type Some<A> = { t: "Some", v: A }
-type None = {t: "None", v: undefined }
-
-// Create the variant type
-type Option<A> = Some<A> | None
-
-// Create constructors that return the variant type
-const Some = <A>(a: A): Option<A> => ({
-    t: "Some",
-    v: a
-})
-
-const None = (a: any): Option<any> => ({
-    t: "None",
-    v: undefined
-})
-
-// Values can now be encoded as a variant
-const cat = Some("cat")
-
-// Now the variant can be handled by switching on the type (t).
-// Each case knows that since the type (t) is defined, the type of the value (v) is known. 
-switch (cat.t) {
-    case "Some": console.log(`hello ${cat.v}!!`); break;
-    case "None": console.log(":("); break;
-    default: console.log(":("); break;
-}
 
 ```
 
