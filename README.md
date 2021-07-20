@@ -119,9 +119,6 @@ const seven = pipe(4).pipe(add(3)).done()
 
 See: https://github.com/attack-monkey/Lean-Functional-Typescript/blob/main/Dependency-Injection.md
 
-
-```
-
 **Javscript multi-arguments are still useful - especially when dealing with optional parameters**
 
 ```typescript
