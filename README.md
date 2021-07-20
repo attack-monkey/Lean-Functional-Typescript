@@ -1,15 +1,17 @@
 # A guide to Lean Functional Typescript
 
-Lean is a Functional way of writing Typescript applications, based on the ML family of languages.
+**Lean** is the simple approach to functional programming (fp) in Typescript.
 
-It provides a **lean** way of writing safer code without the complexity of some other functional languages.
+Lean is based on the ML family of languages, such as F#, ReScript, oCaml, and more.
 
-It differs from say fp.ts which has aligns many haskell-like features to Typescript, but at the cost of complexity.
+ML based languages provide a simple way of writing safer code without the complexity of some other functional languages like Haskell.
+
+Lean differs from say fp.ts which aligns many haskell-like features to Typescript, but at the cost of complexity and a steep learning curve.
 
 Install
 =======
 
-The Lean Prelude provides utilities such as **pattern matching** and **piping**.
+The Lean Prelude provides utilities such as **pattern matching** and **piping**, but much of Lean is actually just plain js / ts - library free.
 
 To get going with Lean, download the **prelude**
 
@@ -21,9 +23,21 @@ It works with both javascript and typescript...
 
 We recommend typescript for the type-safety that it gives.
 
+Why Lean?
+=========
 
-Pure Functions
-==============
+If you are able to, check out **ReScript**, which is actually ML based JavaScript - It's light-weight and elegant.
+
+If however, your organisation insists on using typescript ( or just javascript ), then Lean is for you.
+
+Lean is simpler than the likes of fp.ts. It is more idiomatic to typescript, and so doesn't require stack of additional modules to get going.
+
+There is no mention of Monads, Functors, or any other scary Haskell-like terms.
+
+Lean also interconnects with the rest of the typescript functional eco-system seamlessly (See the section on Type-lifting).
+
+Getting Started - Pure Functions
+================================
 
 Pure Functions are the building blocks of any functional programming. Pure Functions take in input and return output - without mutating anything.
 
