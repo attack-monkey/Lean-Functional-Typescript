@@ -310,14 +310,14 @@ Lean provides some safer utilities for managing mutability than the out-of-the-b
 
 `Predictable.store`: Is a safe, powerful replacement for out-of-the-box variables, providing: 
 - Safe dispatch of state (any state that comes out of the store is cloned from the store's state, rather than the state itself)
-- Predictable reciepts of mutable operations
+- Predictable reciepts of mutable operations.
 - Safe predictable subscriptions for safe event-driven programming.
 
 > https://gist.github.com/attack-monkey/4299da2cdc582d7cdd1b593b193f1b20
 
 `mutable`: is a part of the Lean prelude, and a safer utility than the out-of-the-box variable mutation, providing:
 - Safe dispatch of state (any state that comes out of the store is cloned from the store's state, rather than the state itself)
-- 
+- A simple, non event driven approach to mutability.
 > https://github.com/attack-monkey/Lean-Functional-Typescript/blob/main/Mutable.md
 
 
