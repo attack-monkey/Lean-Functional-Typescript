@@ -145,18 +145,48 @@ An example of a recursive function
 
 ```typescript
 
-const sum = (numArr: number[], cursor = 0): number =>
-    numArr[cursor] + (
-        numArr.length - 1 === cursor
-            ? 0
-            : sum(numArr, cursor + 1)
-    )
+const sum = (numArr: number[], cursor = 0, ac = 0): number =>
+    numArr.length - 1 === cursor
+        ? ac + numArr[cursor]
+        : sum(numArr, cursor + 1, ac + numArr[cursor])
 
 console.log(
     sum([1, 4, 20])
 ) // 25
 
 ```
+
+> Note: High levels of recursion in ts / js can lead to blowing the stack. A technique called trampolining is often used in high recursion code to address this. 
+
+```typescript
+
+type Fn = (...args: any[]) => any
+
+const trampoline = (fn: Fn) => (...args: any[]) => {
+  let result = fn(...args)
+  while (typeof result === 'function') {
+    result = result()
+  }
+  return result
+}
+
+type RecNumber = number | (() => RecNumber)
+    
+const sumRec = (numArr: number[], cursor = 0, ac = 0): RecNumber =>
+    numArr.length - 1 === cursor
+        ? ac + numArr[cursor]
+        : () => sumRec(numArr, cursor + 1, ac + numArr[cursor])
+    
+const sum = trampoline(sumRec)
+
+console.log(
+    sum([1, 4, 20, 20, 80, 100])
+) // 225
+
+```
+
+Call Signatures
+===============
 
 **In Lean, the focus is on data that meets the call signature of the function.**
 
